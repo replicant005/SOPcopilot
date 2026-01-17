@@ -14,7 +14,7 @@ if not load_dotenv(dotenv_path=".env"):
 
 
 def get_env(var: str) -> str:
-    load_dotenv()
+    load_dotenv(override=True)
     if var in environ:
         return environ[var]
     raise Exception(

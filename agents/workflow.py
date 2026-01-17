@@ -1,10 +1,12 @@
 from agents.models import *
 from agents.config import *
-from agents.validation_utils import (_norm_q, 
-                              _norm, 
-                              _validate_question_text, 
-                              _ungrounded_entities, 
-                              _ungrounded_numbers)
+from agents.validation_utils import (
+    _norm_q,
+    _norm,
+    _validate_question_text,
+    _ungrounded_entities,
+    _ungrounded_numbers,
+)
 from agents.prompts import beat_planner_messages, question_generator_messages
 from econf.env import _set_env
 
@@ -19,12 +21,9 @@ import re
 from textwrap import dedent
 
 
-
 _set_env("COHERE_API_KEY")
+llm = ChatCohere(model="command-a-03-2025")
 
-llm = ChatCohere(
-    model="command-a-03-2025"
-)
 
 def _build_canonical_input(user_input: UserInput) -> str:
     """
@@ -37,18 +36,26 @@ def _build_canonical_input(user_input: UserInput) -> str:
         f"Resume points:\n{bullets}\n"
     )
 
+
 def make_redactor_node(
     *,
     language: str = "en",
     entities: list[str] | None = None,
     default_operator: str = "replace",
-) :
+):
     """
     A presidio wrapper to create the redactor node.
     """
     analyzer = AnalyzerEngine()
     anonymizer = AnonymizerEngine()
-    entities = entities or ["PERSON", "PHONE_NUMBER", "EMAIL_ADDRESS", "LOCATION", "CREDIT_CARD", "URL"]
+    entities = entities or [
+        "PERSON",
+        "PHONE_NUMBER",
+        "EMAIL_ADDRESS",
+        "LOCATION",
+        "CREDIT_CARD",
+        "URL",
+    ]
 
     # Replace PII with its entity type,<EMAIL_ADDRESS>.
     # (Presidio supports different operators; replace/mask/redact, etc.) :contentReference[oaicite:4]{index=4}
@@ -97,13 +104,14 @@ def make_redactor_node(
 
     return redactor_node
 
+
 def beat_planner_node(state: PipelineState) -> Command[Literal["question_generator"]]:
     """
     Produces a list of beat plan item and sends a map task.
     """
-    
+
     redacted_input = state["redacted_input"]
-    
+
     planner = llm.bind(temperature=PLANNER_TEMP).with_structured_output(BeatPlanOut)
     out: BeatPlanOut = planner.invoke(beat_planner_messages(redacted_input))
 
@@ -115,29 +123,37 @@ def beat_planner_node(state: PipelineState) -> Command[Literal["question_generat
         raise ValueError(f"BeatPlanner must output A–E exactly once. Got: {beats}")
 
     sends = [
-        Send("question_generator", {
-            "beat_task": item.model_dump(),
-            "redacted_input": redacted_input,
-        })
+        Send(
+            "question_generator",
+            {
+                "beat_task": item.model_dump(),
+                "redacted_input": redacted_input,
+            },
+        )
         for item in beat_plan
     ]
 
     return Command(update={"beat_plan": beat_plan}, goto=sends)
 
 
-def question_generator_node(task: BeatPlanItem, redacted_input: str) -> list[QuestionObject]:
+def question_generator_node(
+    task: BeatPlanItem, redacted_input: str
+) -> list[QuestionObject]:
     """
     StateGraph node to generate questions.
-    """ 
-    generator = llm.bind(temperature=GENERATOR_TEMP).with_structured_output(QuestionsOut)
+    """
+    generator = llm.bind(temperature=GENERATOR_TEMP).with_structured_output(
+        QuestionsOut
+    )
     out = generator.invoke(question_generator_messages(task, redacted_input))
     return out.items
+
 
 def question_generator_worker(worker_state: dict[str, Any]) -> dict[str, Any]:
     """
     Generate questions per beat.
     """
-    
+
     if "beat_task" not in worker_state:
         raise KeyError(
             f"question_generator got keys: {list(worker_state.keys())}"
@@ -148,6 +164,7 @@ def question_generator_worker(worker_state: dict[str, Any]) -> dict[str, Any]:
     redacted_input = worker_state["redacted_input"]
 
     questions = question_generator_node(task, redacted_input)
+
     return {"questions_by_beat": {task.beat: questions}}
 
 
@@ -156,7 +173,9 @@ def assembler_node(state: PipelineState) -> dict:
     Deterministic "reduce": merge + dedupe + trim.
     Returns {"final_questions_by_beat": dict[Beat, list[QuestionObject]]}
     """
-    questions_by_beat: dict[Beat, list[QuestionObject]] = state.get("questions_by_beat", {}) or {}
+    questions_by_beat: dict[Beat, list[QuestionObject]] = (
+        state.get("questions_by_beat", {}) or {}
+    )
 
     # Ensure all beats exist
     merged: dict[Beat, list[QuestionObject]] = {b: [] for b in ALL_BEATS}
@@ -182,18 +201,19 @@ def assembler_node(state: PipelineState) -> dict:
 
     return {"final_questions_by_beat": final_by_beat}
 
+
 def clear_failed_beats_questions(
-    questions_by_beat: dict[Beat, list[QuestionObject]],
-    failed_beats: List[Beat]
+    questions_by_beat: dict[Beat, list[QuestionObject]], failed_beats: List[Beat]
 ) -> dict[Beat, list[QuestionObject]]:
     qb = dict(questions_by_beat or {})
     for b in failed_beats:
         qb[b] = []
     return qb
 
-def regenerate_questions(failed_beats: list[str], 
-                         plan_map: dict[Beat, BeatPlanItem],
-                         redacted_input: str) -> list[Send]:
+
+def regenerate_questions(
+    failed_beats: list[str], plan_map: dict[Beat, BeatPlanItem], redacted_input: str
+) -> list[Send]:
     sends = []
     for b in failed_beats:
         bp = plan_map.get(b) or BeatPlanItem(beat=b, missing=[], guidance=None)
@@ -222,12 +242,17 @@ def regenerate_questions(failed_beats: list[str],
         )
     return sends
 
+
 def validator_node(state: PipelineState) -> Command | dict:
+    # Placeholder for validation logic
+    # return {"validation_report": ValidationReport(ok=True)}
+
+    # Real implementations
     try:
         source_text = state["redacted_input"]
         source_norm = _norm(source_text)
         final_by_beat = state.get("final_questions_by_beat", {})
-        
+
         failed_reasons: Dict[Beat, List[str]] = {}
         failed_beats: List[Beat] = []
         for beat in ALL_BEATS:
@@ -244,21 +269,27 @@ def validator_node(state: PipelineState) -> Command | dict:
                         reasons.append("Missing intent.")
                     missing_nums = _ungrounded_numbers(qtext, source_norm)
                     if missing_nums:
-                        reasons.append(f"Ungrounded numbers not found in source: {missing_nums}")
-                    
-                    missing_entities = _ungrounded_entities(qtext, source_text, source_norm)
+                        reasons.append(
+                            f"Ungrounded numbers not found in source: {missing_nums}"
+                        )
+
+                    missing_entities = _ungrounded_entities(
+                        qtext, source_text, source_norm
+                    )
                     if missing_entities:
-                        reasons.append(f"Ungrounded entities not found in source: {missing_entities}")
-                    
+                        reasons.append(
+                            f"Ungrounded entities not found in source: {missing_entities}"
+                        )
+
                     if "@" in qtext:
                         reasons.append("Email-like token detected in question.")
                     if re.search(r"\b\d{3}[-\s]?\d{3}[-\s]?\d{4}\b", qtext):
                         reasons.append("Phone-like token detected in question.")
-            
+
             if reasons:
                 failed_reasons[beat] = sorted(set(reasons))
                 failed_beats.append(beat)
-        
+
         ok = len(failed_beats) == 0
         report = ValidationReport(
             ok=ok,
@@ -269,14 +300,20 @@ def validator_node(state: PipelineState) -> Command | dict:
 
         if ok:
             return Command(update={"validation_report": report}, goto=END)
-        
+
         attempt = int(state.get("attempt_count") or 0) + 1
-        report.repairs_applied.append(f"Attempt {attempt}: regenerate beats {failed_beats}")
+        report.repairs_applied.append(
+            f"Attempt {attempt}: regenerate beats {failed_beats}"
+        )
 
         if attempt >= MAX_ATTEMPT:
-            report.warnings.append("Max repair attempts reached; returning best-effort output.")
+            report.warnings.append(
+                "Max repair attempts reached; returning best-effort output."
+            )
             report.ok = True
-            return Command(update={"validation_report": report, "attempt_count": attempt}, goto=END)
+            return Command(
+                update={"validation_report": report, "attempt_count": attempt}, goto=END
+            )
 
         qb = state.get("questions_by_beat", {}) or {}
         qb_cleared = clear_failed_beats_questions(qb, failed_beats)
@@ -298,8 +335,8 @@ def validator_node(state: PipelineState) -> Command | dict:
             goto=sends,
         )
     except Exception as e:
-        raise Exception(f"Validator failed due to {e}.")
-        
+        print(f"The following error occured: {e}")
+
 
 def create_graph():
     builder = StateGraph(PipelineState)
@@ -320,10 +357,25 @@ def create_graph():
     graph = builder.compile()
     return graph
 
+
 def run_pipeline(user_input: UserInput) -> dict[Beat, list[QuestionObject]]:
+    """
+    Exapmle of an user input:
+    exp1 = {
+    "scholarship_name": "Vector scholarships",
+    "program_type": "Community Leadership",
+    "goal_one_liner": "Machine Learning Workshop hosts for academic engagement.",
+    "resume_points": [
+        "Led a team of 5 in developing a 3D CNN to decode emotional state from 7tfMRI brain images, improved the test accuracy to 80%."
+        "Organized and hosted weekly study paper reading groups for over 15 students in transformers.",
+        "Conducted research under Prof Geoffery Hinton, resulting in a published paper in a Neurlps 2025 conference.",
+        ],
+    }
+    """
+
     try:
         graph = create_graph()
         out = graph.invoke({"user_input": user_input})
         return out
     except Exception as e:
-        raise Exception(f"Pipeline failed due to {e}.")
+        print(f"Exception occured due to {type(e)} as follows | {e}.")
