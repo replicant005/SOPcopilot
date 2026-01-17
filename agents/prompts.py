@@ -17,6 +17,15 @@ def _beat_defs(program_type: str) -> str:
       )
   elif program_type == "Graduate":
     # TODO Create a prompt here.
+    return dedent(
+      """\
+      For example, the user may (a) be applying to a PhD (research) program and \
+      (b) have research experience on their resume. Suppose you are working on beat A: Purpose & Fit. \
+      In this case, you should output anchors to both the fact that the PhD is a research program and \
+      their past experience in research. You may say that missing information includes the research \
+      fit between the two, or the motivation the user has to commit to a research program.
+      """
+    )
     pass
 
   else:
@@ -45,12 +54,6 @@ def beat_planner_messages(program_type: str, redacted_input: str):
     - guidance: one actionable hint (<= 20 words). Tailor this to 
     - anchors: 2-4 exact phrases copied verbatim from the redacted input (each <= 6 words)
       that are relevant to this beat, along with where they appear.
-    
-    For example, the user may (a) be applying to a PhD (research) program and \
-      (b) have research experience on their resume. Suppose you are working on beat A: Purpose & Fit. \
-      In this case, you should output anchors to both the fact that the PhD is a research program and \
-      their past experience in research. You may say that missing information includes the research \
-      fit between the two, or the motivation the user has to commit to a research program.
       
     Constraints:
     - Include A,B,C,D,E exactly once.
