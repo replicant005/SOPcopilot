@@ -1,4 +1,5 @@
-from workflow import run_pipeline
+from agents.workflow import run_pipeline
+from agents.models import UserInput
 
 exp1 = {
     "scholarship_name": "Vector scholarships",
@@ -11,4 +12,5 @@ exp1 = {
     ],
 }
 
-print(run_pipeline(exp1))
+user_input = UserInput.model_validate(exp1)
+print(run_pipeline(user_input))

@@ -1,11 +1,12 @@
-from models import *
-from config import *
-from validation_utils import (_norm_q, 
+from agents.models import *
+from agents.config import *
+from agents.validation_utils import (_norm_q, 
                               _norm, 
                               _validate_question_text, 
                               _ungrounded_entities, 
                               _ungrounded_numbers)
-from prompts import beat_planner_messages, question_generator_messages
+from agents.prompts import beat_planner_messages, question_generator_messages
+from econf.env import _set_env
 
 from presidio_analyzer import AnalyzerEngine
 from presidio_anonymizer import AnonymizerEngine
@@ -17,12 +18,6 @@ from langgraph.graph import START, END, StateGraph
 import re
 from textwrap import dedent
 
-from os import environ
-from getpass import getpass
-
-def _set_env(var: str):
-    if not environ.get(var):
-        environ[var] = getpass(f"{var}: ")
 
 _set_env("COHERE_API_KEY")
 
@@ -329,7 +324,7 @@ def create_graph():
     graph = builder.compile()
     return graph
 
-def run_pipeline(user_input : dict) -> dict[Beat, list[QuestionObject]]:
+def run_pipeline(user_input : UserInput) -> dict[Beat, list[QuestionObject]]:
     """
     Exapmle of an user input:
     exp1 = {
@@ -345,9 +340,8 @@ def run_pipeline(user_input : dict) -> dict[Beat, list[QuestionObject]]:
     """
     
     try:
-        # validated_input = UserInput.model_validate(user_input)
         graph = create_graph()
-        out = graph.invoke({"user_input": validated_input})
+        out = graph.invoke({"user_input": user_input})
         return out
     except Exception as e:
-        print(f"Exception occured due to {e}")
+        print(f"Exception occured due to {e}.")
