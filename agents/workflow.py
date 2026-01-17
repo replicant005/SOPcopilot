@@ -203,7 +203,7 @@ def assembler_node(state: PipelineState) -> dict:
 
 
 def clear_failed_beats_questions(
-    questions_by_beat: dict[Beat, list[QuestionObject]], failed_beats: List[Beat]
+    questions_by_beat: dict[Beat, list[QuestionObject]], failed_beats: list[Beat]
 ) -> dict[Beat, list[QuestionObject]]:
     qb = dict(questions_by_beat or {})
     for b in failed_beats:
@@ -253,8 +253,8 @@ def validator_node(state: PipelineState) -> Command | dict:
         source_norm = _norm(source_text)
         final_by_beat = state.get("final_questions_by_beat", {})
 
-        failed_reasons: Dict[Beat, List[str]] = {}
-        failed_beats: List[Beat] = []
+        failed_reasons: dict[Beat, list[str]] = {}
+        failed_beats: list[Beat] = []
         for beat in ALL_BEATS:
             reasons = []
             qs = final_by_beat.get(beat, [])
