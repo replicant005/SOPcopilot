@@ -5,16 +5,19 @@ from textwrap import dedent
 def _beat_defs(program_type: str) -> str:
   
   if program_type == "Community Grant":  
-    return dedent(
-      """\
-      Beats:
-      A: Purpose & Fit
-      B: Excellence / Proof
-      C: Impact
-      D: Leadership & Character
-      E: Reflection & Growth
-      """
-      )
+    return dedent("""\
+    Beats (Community Grant SOP):
+    A: Community Need & Alignment
+       - What need exists, who is affected, why now, and why your project fits the grant’s priorities.
+    B: Project Plan & Feasibility
+       - What you will do, how you will do it, timeline, resources, budget, and realistic execution.
+    C: Impact & Measurement
+       - What changes, for whom, how much, and how you’ll measure/validate success.
+    D: Team, Partners & Safeguards
+       - Who is doing what, partner roles, permissions, logistics, risk management, safety/ethics.
+    E: Sustainability & Learning
+       - What happens after funding, maintenance/hand-off, scalability, and what you learned/changed.
+    """)
   elif program_type == "Graduate":
     # TODO Create a prompt here.
     return dedent(
@@ -26,16 +29,14 @@ def _beat_defs(program_type: str) -> str:
       fit between the two, or the motivation the user has to commit to a research program.
       """
     )
-    pass
-
   else:
     raise Exception("Unkown scholarship type is passed.")
 
 def beat_planner_messages(program_type: str, redacted_input: str):
 
     system = dedent(
-        """\
-    You are a beat planner for a Statement of Purpose writing assistant. \
+        f"""\
+    You are a beat planner for a Statement of Purpose question generator. You are targetting for a {program_type} program. \
       A beat is a point or story to write around.
     The writing assistant generates questions based on the user's current writing, \
       inspired by the snowflake method of writing.
@@ -43,23 +44,20 @@ def beat_planner_messages(program_type: str, redacted_input: str):
     """
     )
 
-    rules = dedent(
-        """\
-    Create a plan for beats A–E.
+    rules = dedent("""\
+    Create a plan for beats A–E (exactly once each).
 
-    For each beat, output:
-    - beat: one of A,B,C,D,E.
-    - missing: 2-4 short, specific missing details needed to write that beat,
-      grounded in the redacted input (reference the section name when possible).
-    - guidance: one actionable hint (<= 20 words). Tailor this to 
-    - anchors: 2-4 exact phrases copied verbatim from the redacted input (each <= 6 words)
-      that are relevant to this beat, along with where they appear.
-      
+    For each beat output:
+    - beat: A|B|C|D|E
+    - missing: 2–4 concrete missing details (must reference the redacted input sections)
+    - guidance: <= 20 words
+    - anchors: 2–4 exact phrases copied verbatim from redacted input (<= 8 words each)
+    - ask_for: 2–4 atomic details the question generator must ask the user to provide
+
     Constraints:
-    - Include A,B,C,D,E exactly once.
-    - If the input lacks anchors for a beat, set anchors=[] and put the needed specifics in missing.
-    """
-    )
+    - missing and ask_for must be grounded in the redacted input (no assumptions).
+    - If no anchors exist for a beat, anchors=[] and missing/ask_for must request specifics.
+    """)
 
     user_ctx = dedent(
         f"""\
