@@ -1,4 +1,4 @@
-from workflow import run_pipeline
+from agents.workflow import run_pipeline
 
 exp1 = {
     "scholarship_name": "Vector scholarships",
