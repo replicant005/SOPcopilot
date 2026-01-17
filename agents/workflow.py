@@ -8,22 +8,24 @@ from agents.validation_utils import (
     _ungrounded_numbers,
 )
 from agents.prompts import beat_planner_messages, question_generator_messages
+from agents.logger_utils import log_event, log_event_patch
 from econf.env import _set_env
 
 from presidio_analyzer import AnalyzerEngine
 from presidio_anonymizer import AnonymizerEngine
 from presidio_anonymizer.entities import OperatorConfig
 from typing import Any, Literal
+from textwrap import dedent
+from time import perf_counter
 from langchain_cohere import ChatCohere
 from langgraph.types import Command, Send
 from langgraph.graph import START, END, StateGraph
 import re
-from textwrap import dedent
 
 
 _set_env("COHERE_API_KEY")
 llm = ChatCohere(model="command-a-03-2025")
-
+ 
 
 def _build_canonical_input(user_input: UserInput) -> str:
     """
@@ -130,9 +132,16 @@ def beat_planner_node(state: PipelineState) -> Command[Literal["question_generat
             })
         for item in beat_plan
     ]
-
-    return Command(update={"beat_plan": beat_plan}, goto=sends)
-
+    
+    
+    log_patch = log_event(
+        state, 
+        "beat_planner", 
+        "created_beat_plan", 
+        {"beats": [x.beat for x in beat_plan],
+         "missing_counts": {x.beat: len(x.missing)  for x in beat_plan},}
+        )
+    return Command(update={"beat_plan": beat_plan, **log_patch}, goto=sends)
 
 def question_generator_node(task: BeatPlanItem, 
                             program_type: str, 
@@ -154,10 +163,23 @@ def question_generator_node(task: BeatPlanItem,
         raise Exception(f"Unexpected exception: {e}")
 
 
+from typing import Any, Dict
+import time
+
 def question_generator_worker(worker_state: dict[str, Any]) -> dict[str, Any]:
     """
-    Generate questions per beat.
+    Generate questions per beat (map worker).
+    Emits audit_log patches that will merge into shared state.
     """
+    t0 = perf_counter()
+
+    # Defensive: record keys early (super useful in debugging)
+    start_patch = log_event_patch(
+        agent="question_generator",
+        event="start",
+        data={"keys": list(worker_state.keys())},
+    )
+
     try:
         task = BeatPlanItem.model_validate(worker_state["beat_task"])
         program_type = worker_state["program_type"]
@@ -165,17 +187,55 @@ def question_generator_worker(worker_state: dict[str, Any]) -> dict[str, Any]:
 
         questions = question_generator_node(task, program_type, redacted_input)
 
-        return {"questions_by_beat": {task.beat: questions}}
-    except KeyError as e:
-        raise Exception(f"Key error occured during the question generation. The worker state is {worker_state}.")
-    except Exception as e:
-        raise Exception(f"Unexpected exception: {e}.")
+        dt_ms = (perf_counter() - t0) * 1000
+        ok_patch = log_event_patch(
+            agent="question_generator",
+            event="success",
+            data={
+                "beat": task.beat,
+                "n_questions": len(questions),
+                "latency_ms": round(dt_ms, 2),
+            },
+        )
 
+        return {
+            **start_patch,
+            **ok_patch,
+            "questions_by_beat": {task.beat: questions},
+        }
+
+    except KeyError:
+        dt_ms = (perf_counter() - t0) * 1000
+        err_patch = log_event_patch(
+            agent="question_generator",
+            event="error",
+            data={
+                "error_type": "KeyError",
+                "worker_state_keys": list(worker_state.keys()),
+                "latency_ms": round(dt_ms, 2),
+            },
+        )
+        # keep raising, but still return patch if you prefer “best-effort”
+        raise Exception(
+            f"Key error occurred during question generation. worker_state keys={list(worker_state.keys())}"
+        ) from None
+
+    except Exception as e:
+        dt_ms = (perf_counter() - t0) * 1000
+        _ = log_event_patch(
+            agent="question_generator",
+            event="error",
+            data={
+                "error_type": type(e).__name__,
+                "message": str(e),
+                "latency_ms": round(dt_ms, 2),
+            },
+        )
+        raise Exception(f"Unexpected exception: {e}.") from e
 
 def assembler_node(state: PipelineState) -> dict:
     """
     Deterministic "reduce": merge + dedupe + trim.
-    Returns {"final_questions_by_beat": dict[Beat, list[QuestionObject]]}
     """
     questions_by_beat: dict[Beat, list[QuestionObject]] = (
         state.get("questions_by_beat", {}) or {}
@@ -186,6 +246,8 @@ def assembler_node(state: PipelineState) -> dict:
     for beat, qs in questions_by_beat.items():
         if beat in merged and qs:
             merged[beat].extend(qs)
+
+    pre_merge_count = sum(len(v) for v in merged.values())
 
     seen: set[str] = set()
     final_by_beat: dict[Beat, list[QuestionObject]] = {b: [] for b in ALL_BEATS}
@@ -202,8 +264,20 @@ def assembler_node(state: PipelineState) -> dict:
 
         if len(final_by_beat[beat]) > MAX_PER_BEAT:
             final_by_beat[beat] = final_by_beat[beat][:MAX_PER_BEAT]
+    
+    post_merge_count = sum(len(v) for v in final_by_beat.values())
+    
 
-    return {"final_questions_by_beat": final_by_beat}
+    beat_counts = {b: len(final_by_beat[b]) for b in ALL_BEATS}
+
+    return {
+        "final_questions_by_beat": final_by_beat,
+        **log_event(state, "assembler", "reduce_complete", {
+            "total_pre_dedupe": pre_merge_count,
+            "total_post_dedupe": post_merge_count,
+            "per_beat_counts": beat_counts,
+        }),
+    }
 
 
 def clear_failed_beats_questions(
@@ -251,7 +325,17 @@ def regenerate_questions(failed_beats: list[str],
 
 
 def validator_node(state: PipelineState) -> Command | dict:
-    """Node to validate the output."""
+    """
+    Core validation logic that checks:
+
+    1. Coverage (A-E present)
+    2. Question formatting (single-line, ends with ?)
+    3. Intent length sanity
+    4. No PII placeholders
+    5. Ungrounded numbers (any numbers in question must appear in the redacted input)
+    6. Ungrounded name entities using spaCy NER. It must apear in redacted_input.
+    e.g. institution name, advisor's name, emails, etc...
+    """
     try:
         source_text = state["redacted_input"]
         source_norm = _norm(source_text)
@@ -301,6 +385,17 @@ def validator_node(state: PipelineState) -> Command | dict:
             warnings=[],
             repairs_applied=[],
         )
+        
+        base_log = log_event(
+            state,
+            "validator"
+            "checked",
+            {
+                "ok": ok,
+                "failed_beats": failed_beats,
+                "num_failed_beats": len(failed_beats)
+            }
+        )
 
         if ok:
             return Command(update={"validation_report": report}, goto=END)
@@ -308,6 +403,16 @@ def validator_node(state: PipelineState) -> Command | dict:
         attempt = int(state.get("attempt_count") or 0) + 1
         report.repairs_applied.append(
             f"Attempt {attempt}: regenerate beats {failed_beats}"
+        )
+        
+        repair_log = log_event(
+            state,
+            "validator",
+            "repair_planned",
+            {
+                "attempt": attempt,
+                "beats_to_regen": failed_beats,
+            }
         )
 
         if attempt >= MAX_ATTEMPT:
