@@ -324,7 +324,7 @@ def create_graph():
     graph = builder.compile()
     return graph
 
-def run_pipeline(user_input : dict) -> dict[Beat, list[QuestionObject]]:
+def run_pipeline(user_input : UserInput) -> dict[Beat, list[QuestionObject]]:
     """
     Exapmle of an user input:
     exp1 = {
@@ -340,9 +340,8 @@ def run_pipeline(user_input : dict) -> dict[Beat, list[QuestionObject]]:
     """
     
     try:
-        validated_input = UserInput.model_validate(user_input)
         graph = create_graph()
-        out = graph.invoke({"user_input": validated_input})
+        out = graph.invoke({"user_input": user_input})
         return out
     except Exception as e:
         print(f"Exception occured due to {e}.")
