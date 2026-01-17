@@ -188,3 +188,154 @@ def assembler_node(state: PipelineState) -> dict:
             final_by_beat[beat] = final_by_beat[beat][:MAX_PER_BEAT]
 
     return {"final_questions_by_beat": final_by_beat}
+
+def clear_failed_beats_questions(
+    questions_by_beat: dict[Beat, list[QuestionObject]],
+    failed_beats: List[Beat]
+) -> dict[Beat, list[QuestionObject]]:
+    qb = dict(questions_by_beat or {})
+    for b in failed_beats:
+        qb[b] = []
+    return qb
+
+def regenerate_questions(failed_beats: list[str], 
+                         plan_map: dict[Beat, BeatPlanItem],
+                         redacted_input: str) -> list[Send]:
+    sends = []
+    for b in failed_beats:
+        bp = plan_map.get(b) or BeatPlanItem(beat=b, missing=[], guidance=None)
+
+        # Strengthen guidance for regen (without relying on raw input)
+        extra = dedent(
+            "Regenerate questions. Do not introduce any new names, numbers, organizations, dates, or places, unless they appear verbatim in the provided redacted input."
+        )
+        new_guidance = (bp.guidance or "").strip()
+        new_guidance = (new_guidance + " " + extra).strip()
+
+        regen_task = BeatPlanItem(
+            beat=bp.beat,
+            missing=bp.missing,
+            guidance=new_guidance,
+        )
+
+        sends.append(
+            Send(
+                "question_generator",
+                {
+                    "beat_task": regen_task.model_dump(),
+                    "redacted_input": redacted_input,
+                },
+            )
+        )
+    return sends
+
+def validator_node(state: PipelineState) -> Command | dict:
+    # Placeholder for validation logic
+    # return {"validation_report": ValidationReport(ok=True)}
+    
+    # Real implementations
+    try:
+        source_text = state["redacted_input"]
+        source_norm = _norm(source_text)
+        final_by_beat = state.get("final_questions_by_beat", {})
+        
+        failed_reasons: Dict[Beat, List[str]] = {}
+        failed_beats: List[Beat] = []
+        for beat in ALL_BEATS:
+            reasons = []
+            qs = final_by_beat.get(beat, [])
+            if not qs:
+                reasons.append("Missing questions for this beat.")
+            else:
+                for qo in qs:
+                    qtext = (qo.question or "").strip()
+                    reasons.extend(_validate_question_text(qtext))
+                    intent = (qo.intent or "").strip()
+                    if not intent:
+                        reasons.append("Missing intent.")
+                    missing_nums = _ungrounded_numbers(qtext, source_norm)
+                    if missing_nums:
+                        reasons.append(f"Ungrounded numbers not found in source: {missing_nums}")
+                    
+                    missing_entities = _ungrounded_entities(qtext, source_text, source_norm)
+                    if missing_entities:
+                        reasons.append(f"Ungrounded entities not found in source: {missing_entities}")
+                    
+                    if "@" in qtext:
+                        reasons.append("Email-like token detected in question.")
+                    if re.search(r"\b\d{3}[-\s]?\d{3}[-\s]?\d{4}\b", qtext):
+                        reasons.append("Phone-like token detected in question.")
+            
+            if reasons:
+                failed_reasons[beat] = sorted(set(reasons))
+                failed_beats.append(beat)
+        
+        ok = len(failed_beats) == 0
+        report = ValidationReport(
+            ok=ok,
+            errors=[f"{b}: {failed_reasons[b]}" for b in failed_beats],
+            warnings=[],
+            repairs_applied=[],
+        )
+
+        if ok:
+            return Command(update={"validation_report": report}, goto=END)
+        
+        attempt = int(state.get("attempt_count") or 0) + 1
+        report.repairs_applied.append(f"Attempt {attempt}: regenerate beats {failed_beats}")
+
+        if attempt >= MAX_ATTEMPT:
+            report.warnings.append("Max repair attempts reached; returning best-effort output.")
+            report.ok = True
+            return Command(update={"validation_report": report, "attempt_count": attempt}, goto=END)
+
+        qb = state.get("questions_by_beat", {}) or {}
+        qb_cleared = clear_failed_beats_questions(qb, failed_beats)
+
+        # Create regen sends
+        beat_plan = state.get("beat_plan", []) or []
+        plan_map = {bp.beat: bp for bp in beat_plan}
+
+        sends = regenerate_questions(failed_beats, plan_map, redacted_input=source_text)
+
+        return Command(
+            update={
+                "validation_report": report,
+                "attempt_count": attempt,
+                "failed_beats": failed_beats,
+                "failed_reasons": failed_reasons,
+                "questions_by_beat": qb_cleared,
+            },
+            goto=sends,
+        )
+    except Exception as e:
+        print(f"The following occured: {e}")
+        
+
+def create_graph():
+    builder = StateGraph(PipelineState)
+
+    builder.add_node("redactor", make_redactor_node())
+    builder.add_node("beat_planner", beat_planner_node)
+    builder.add_node("question_generator", question_generator_worker)
+    builder.add_node("assembler", assembler_node)
+    builder.add_node("validator", validator_node)
+
+    builder.add_edge(START, "redactor")
+    builder.add_edge("redactor", "beat_planner")
+
+    builder.add_edge("question_generator", "assembler")
+    builder.add_edge("assembler", "validator")
+    builder.add_edge("validator", END)
+
+    graph = builder.compile()
+    return graph
+
+def run_pipeline(user_input : dict) -> dict[Beat, list[QuestionObject]]:
+    try:
+        user_input = UserInput.model_validate(exp1)
+        graph = create_graph()
+        out = graph.invoke({"user_input": user_input})
+    except Exception as e:
+        print(f"Exception occured due to {e}")
+    
