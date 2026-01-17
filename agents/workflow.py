@@ -1,5 +1,10 @@
 from models import *
 from config import *
+from validation_utils import (_norm_q, 
+                              _norm, 
+                              _validate_question_text, 
+                              _ungrounded_entities, 
+                              _ungrounded_numbers)
 from prompts import beat_planner_messages, question_generator_messages
 
 from presidio_analyzer import AnalyzerEngine
@@ -10,6 +15,7 @@ from langchain_cohere import ChatCohere
 from langgraph.types import Command, Send
 from langgraph.graph import START, END, StateGraph
 import re
+from textwrap import dedent
 
 from os import environ
 from getpass import getpass
@@ -94,14 +100,6 @@ def make_redactor_node(
         }
 
     return redactor_node
-
-def _norm_q(s: str) -> str:
-    # Normalize for dedupe: lowercase, collapse whitespace, strip punctuation-ish
-    s = s.strip().lower()
-    s = re.sub(r"\s+", " ", s)
-    s = re.sub(r"[“”\"'`]", "", s)
-    s = re.sub(r"\s*\?\s*$", "?", s)  # unify question mark ending
-    return s
 
 def beat_planner_node(state: PipelineState) -> Command[Literal["question_generator"]]:
     """
@@ -309,7 +307,7 @@ def validator_node(state: PipelineState) -> Command | dict:
             goto=sends,
         )
     except Exception as e:
-        print(f"The following occured: {e}")
+        print(f"The following error occured: {e}")
         
 
 def create_graph():
@@ -353,4 +351,3 @@ def run_pipeline(user_input : dict) -> dict[Beat, list[QuestionObject]]:
         return out
     except Exception as e:
         print(f"Exception occured due to {e}")
-    

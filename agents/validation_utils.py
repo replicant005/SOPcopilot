@@ -25,6 +25,14 @@ def _norm(s: str) -> str:
     s = re.sub(r"\s+", " ", s).strip()
     return s
 
+def _norm_q(s: str) -> str:
+    # Normalize for dedupe: lowercase, collapse whitespace, strip punctuation-ish
+    s = s.strip().lower()
+    s = re.sub(r"\s+", " ", s)
+    s = re.sub(r"[“”\"'`]", "", s)
+    s = re.sub(r"\s*\?\s*$", "?", s)  # unify question mark ending
+    return s
+
 def _ungrounded_numbers(question: str, source_norm: str) -> list[str]:
     nums = {m.group(0) for m in _num_re.finditer(question)}
     missing = []
