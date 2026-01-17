@@ -9,11 +9,29 @@ from operator import add
 
 Beat = Literal["A", "B", "C", "D", "E"]
 
-class UserInput(BaseModel):
-    scholarship_name: str
-    program_type: Literal["Undergrad", "Graduate", "Community Grant"]
-    goal_one_liner: str
-    resume_points: list[str]
+class UserInput(BaseModel) :
+    scholarship_name: str = Field(...,
+                                  min_length=1,
+                                  max_length=200,
+                                  description= "Name of the scholarship"
+                                  )
+
+    program_type: Literal["Undergrad", "Graduate",
+                          "Research","Community Grant",
+                          "PhD"] = Field(...,description="Type of program")
+
+    goal_one_liner:str = Field(
+        ...,
+        min_length=10,
+        max_length=500,
+        description= "One sentence goal or story"
+    )
+    resume_points : list[str] = Field(
+        ...,
+        min_length=2,
+        description="list of resume bullet points"
+    )
+
 
 
 class PiiSpan(BaseModel):
