@@ -1,10 +1,13 @@
-"""Script to store all the data models used by all agents."""
+"""
+Stores all the data models used by each agent.
+"""
 
 from __future__ import annotations
 
 from typing import Optional, Literal, List
 from typing_extensions import TypedDict, Annotated
 from pydantic import BaseModel, Field
+from operator import add
 
 Beat = Literal["A", "B", "C", "D", "E"]
 
@@ -75,9 +78,14 @@ class PipelineState(TypedDict, total=False):
     failed_beats: list[Beat]
     failed_reasons: dict[Beat, list[str]]
 
-
-    # Reliability / repair
+    # Repair loop
     validation_report: ValidationReport
     attempt_count: int
-
+    
+    # user-side regen request
     regen_request: list[Beat]
+
+    # communications
+    # Note that I use Annotated here to ensure
+    # concurrent workers do not overwrite each other.
+    audit_log: Annotated[list[dict], add]
