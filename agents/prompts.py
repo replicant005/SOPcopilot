@@ -2,6 +2,7 @@ from agents.models import BeatPlanItem
 
 from textwrap import dedent
 
+
 def _beat_defs(program_type: str) -> str:
   
   if program_type == "Community Grant":  
@@ -54,10 +55,34 @@ def beat_planner_messages(program_type: str, redacted_input: str):
     - anchors: 2–4 exact phrases copied verbatim from redacted input (<= 8 words each)
     - ask_for: 2–4 atomic details the question generator must ask the user to provide
 
+<<<<<<< HEAD
     Constraints:
     - missing and ask_for must be grounded in the redacted input (no assumptions).
     - If no anchors exist for a beat, anchors=[] and missing/ask_for must request specifics.
     """)
+=======
+    For each beat, output:
+    - beat: one of A,B,C,D,E.
+    - missing: 2-4 short, specific missing details needed to write that beat, \
+      grounded in the redacted input (reference the section name when possible).
+    - guidance: one actionable hint (<= 20 words). Tailor this to the opportunity \
+        listed in the redacted input. For example, if it is a scholarship for community service, \
+        and asks for examples of community service\
+    - anchors: 2-4 exact phrases copied verbatim from the redacted input (each <= 6 words) \
+      that are relevant to this beat, along with where they appear.
+    
+    For example, the user may (a) be applying to a PhD (research) program and \
+      (b) have research experience on their resume. Suppose you are working on beat A: Purpose & Fit. \
+      In this case, for anchors, you should output anchors to the fact that the PhD is a research program and \
+      that they have past experience in research. \
+      For missing, You may include that missing information includes the research \
+      fit between the two, or the motivation the user has to commit to a research program, or a specific \
+      illustrative anecdote for a specific trait requested by admissions committees, such as intelligence, \
+      persistence, and so on. \
+      For guidance, you may give a hint such as `
+    """
+    )
+>>>>>>> aa1ad8b7445e49aa93f7123f378c2050fb13d586
 
     user_ctx = dedent(
         f"""\
@@ -74,9 +99,10 @@ def beat_planner_messages(program_type: str, redacted_input: str):
         {"role": "user", "content": rules + "\n\n" + user_ctx},
     ]
 
-def question_generator_messages(task: BeatPlanItem, 
-                                program_type: str,
-                                redacted_input: str):
+
+def question_generator_messages(
+    task: BeatPlanItem, program_type: str, redacted_input: str
+):
     system = dedent(
         """\
     You generate tailored questions to help an applicant write their Statement of Purpose.
