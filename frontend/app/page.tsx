@@ -59,11 +59,11 @@ export default function Homepage() {
 
             <Image
               ref={pacmanRef}
-              src="/pencil.png"
+              src="/pencil1.png"
               alt="pencil icon"
-              width={100}
+              width={90}
               height={100}
-              className="absolute left-35 top-40 z-20 will-change-transform"
+              className="absolute left-35 top-35 z-20 will-change-transform"
             />
 
 
@@ -74,10 +74,10 @@ export default function Homepage() {
               style={{ transform: `translateY(${scrollY * 0.1}px)` }}
             >
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight">
-                welcome to <span className="font-semibold text-black">xxx</span>
+                welcome to <span className="font-semibold text-black"></span>
               </h1>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-black leading-tight">
-                xxx.
+                Squill.
               </h1>
             </div>
 
@@ -101,7 +101,7 @@ export default function Homepage() {
               style={{ transform: `translateY(${scrollY * 0.18}px)` }}
             >
               <h2 className="text-3xl md:text-4xl font-semibold">
-                About XXX:
+                About Squill:
               </h2>
             </div>
 
