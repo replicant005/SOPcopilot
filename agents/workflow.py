@@ -31,7 +31,7 @@ def _build_canonical_input(user_input: UserInput) -> str:
     bullets = "\n".join(f"- {b}" for b in user_input.resume_points)
     return (
         f"Scholarship: {user_input.scholarship_name}\n"
-        f"Program type: {user_input.program_type}\n"
+        f"Scholarship type: {user_input.program_type}\n"
         f"Goal: {user_input.goal_one_liner}\n"
         f"Resume points:\n{bullets}\n"
     )
@@ -109,11 +109,11 @@ def beat_planner_node(state: PipelineState) -> Command[Literal["question_generat
     """
     Produces a list of beat plan item and sends a map task.
     """
-
+    program_type = state["user_input"].program_type
     redacted_input = state["redacted_input"]
 
     planner = llm.bind(temperature=PLANNER_TEMP).with_structured_output(BeatPlanOut)
-    out: BeatPlanOut = planner.invoke(beat_planner_messages(redacted_input))
+    out = planner.invoke(beat_planner_messages(program_type, redacted_input))
 
     beat_plan = out.items
 
@@ -123,49 +123,53 @@ def beat_planner_node(state: PipelineState) -> Command[Literal["question_generat
         raise ValueError(f"BeatPlanner must output A–E exactly once. Got: {beats}")
 
     sends = [
-        Send(
-            "question_generator",
-            {
+        Send("question_generator", {
                 "beat_task": item.model_dump(),
                 "redacted_input": redacted_input,
-            },
-        )
+                "program_type": program_type,
+            })
         for item in beat_plan
     ]
 
     return Command(update={"beat_plan": beat_plan}, goto=sends)
 
 
-def question_generator_node(
-    task: BeatPlanItem, redacted_input: str
-) -> list[QuestionObject]:
+def question_generator_node(task: BeatPlanItem, 
+                            program_type: str, 
+                            redacted_input: str
+                            ) -> list[QuestionObject]:
     """
     StateGraph node to generate questions.
     """
-    generator = llm.bind(temperature=GENERATOR_TEMP).with_structured_output(
-        QuestionsOut
-    )
-    out = generator.invoke(question_generator_messages(task, redacted_input))
-    return out.items
+    try:
+        generator = llm.bind(temperature=GENERATOR_TEMP).with_structured_output(QuestionsOut)
+        out = generator.invoke(
+            question_generator_messages(
+                task, 
+                program_type,
+                redacted_input
+                ))
+        return out.items
+    except Exception as e:
+        raise Exception(f"Unexpected exception: {e}")
 
 
 def question_generator_worker(worker_state: dict[str, Any]) -> dict[str, Any]:
     """
     Generate questions per beat.
     """
+    try:
+        task = BeatPlanItem.model_validate(worker_state["beat_task"])
+        program_type = worker_state["program_type"]
+        redacted_input = worker_state["redacted_input"]
 
-    if "beat_task" not in worker_state:
-        raise KeyError(
-            f"question_generator got keys: {list(worker_state.keys())}"
-            f"Payload preview: {str(worker_state)}"
-        )
+        questions = question_generator_node(task, program_type, redacted_input)
 
-    task = BeatPlanItem.model_validate(worker_state["beat_task"])
-    redacted_input = worker_state["redacted_input"]
-
-    questions = question_generator_node(task, redacted_input)
-
-    return {"questions_by_beat": {task.beat: questions}}
+        return {"questions_by_beat": {task.beat: questions}}
+    except KeyError as e:
+        raise Exception(f"Key error occured during the question generation. The worker state is {worker_state}.")
+    except Exception as e:
+        raise Exception(f"Unexpected exception: {e}.")
 
 
 def assembler_node(state: PipelineState) -> dict:
@@ -211,9 +215,11 @@ def clear_failed_beats_questions(
     return qb
 
 
-def regenerate_questions(
-    failed_beats: list[str], plan_map: dict[Beat, BeatPlanItem], redacted_input: str
-) -> list[Send]:
+def regenerate_questions(failed_beats: list[str], 
+                         plan_map: dict[Beat, BeatPlanItem], 
+                         program_type: str,
+                         redacted_input: str
+                         ) -> list[Send]:
     sends = []
     for b in failed_beats:
         bp = plan_map.get(b) or BeatPlanItem(beat=b, missing=[], guidance=None)
@@ -236,6 +242,7 @@ def regenerate_questions(
                 "question_generator",
                 {
                     "beat_task": regen_task.model_dump(),
+                    "program_type": program_type,
                     "redacted_input": redacted_input,
                 },
             )
@@ -321,8 +328,10 @@ def validator_node(state: PipelineState) -> Command | dict:
         # Create regen sends
         beat_plan = state.get("beat_plan", []) or []
         plan_map = {bp.beat: bp for bp in beat_plan}
+        program_type = state["user_input"].program_type
 
-        sends = regenerate_questions(failed_beats, plan_map, redacted_input=source_text)
+        sends = regenerate_questions(failed_beats, 
+                                     plan_map, program_type=program_type,redacted_input=source_text)
 
         return Command(
             update={
@@ -371,6 +380,9 @@ def run_pipeline(user_input: UserInput) -> dict[Beat, list[QuestionObject]]:
         "Conducted research under Prof Geoffery Hinton, resulting in a published paper in a Neurlps 2025 conference.",
         ],
     }
+
+    THEN write
+    user_input = UserInput.model_validate(exp1)
     """
 
     try:

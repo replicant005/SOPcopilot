@@ -1,20 +1,29 @@
+from agents.models import BeatPlanItem
+
 from textwrap import dedent
 
-
-def _beat_defs() -> str:
+def _beat_defs(program_type: str) -> str:
+  
+  if program_type == "Community Grant":  
     return dedent(
-        """\
-    Beats:
-    A: Purpose & Fit
-    B: Excellence / Proof
-    C: Impact
-    D: Leadership & Character
-    E: Reflection & Growth
-    """
-    )
+      """\
+      Beats:
+      A: Purpose & Fit
+      B: Excellence / Proof
+      C: Impact
+      D: Leadership & Character
+      E: Reflection & Growth
+      """
+      )
+  elif program_type == "Graduate":
+    # TODO Create a prompt here.
+    pass
 
+  else:
+    raise Exception("Unkown scholarship type is passed.")
 
-def beat_planner_messages(redacted_input: str):
+def beat_planner_messages(program_type: str, redacted_input: str):
+
     system = dedent(
         """\
     You are a beat planner for a Statement of Purpose writing assistant. \
@@ -51,7 +60,7 @@ def beat_planner_messages(redacted_input: str):
 
     user_ctx = dedent(
         f"""\
-    {_beat_defs()}
+    {_beat_defs(program_type)}
     Redacted canonical input (source of truth):
     {redacted_input}
 
@@ -64,8 +73,9 @@ def beat_planner_messages(redacted_input: str):
         {"role": "user", "content": rules + "\n\n" + user_ctx},
     ]
 
-
-def question_generator_messages(task, redacted_input: str):
+def question_generator_messages(task: BeatPlanItem, 
+                                program_type: str,
+                                redacted_input: str):
     system = dedent(
         """\
     You generate tailored questions to help an applicant write their Statement of Purpose.
@@ -144,7 +154,7 @@ def question_generator_messages(task, redacted_input: str):
 
     user = dedent(
         f"""\
-    {_beat_defs()}
+    {_beat_defs(program_type)}
     {beat_ctx}
 
     Redacted input (source of truth):
