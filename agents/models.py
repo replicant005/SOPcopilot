@@ -2,8 +2,6 @@
 Stores all the data models used by each agent.
 """
 
-from __future__ import annotations
-
 from typing import Optional, Literal, List
 from typing_extensions import TypedDict, Annotated
 from pydantic import BaseModel, Field

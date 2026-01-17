@@ -163,9 +163,6 @@ def question_generator_node(task: BeatPlanItem,
         raise Exception(f"Unexpected exception: {e}")
 
 
-from typing import Any, Dict
-import time
-
 def question_generator_worker(worker_state: dict[str, Any]) -> dict[str, Any]:
     """
     Generate questions per beat (map worker).
@@ -278,7 +275,6 @@ def assembler_node(state: PipelineState) -> dict:
             "per_beat_counts": beat_counts,
         }),
     }
-
 
 def clear_failed_beats_questions(
     questions_by_beat: dict[Beat, list[QuestionObject]], failed_beats: list[Beat]
