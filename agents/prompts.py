@@ -2,11 +2,12 @@ from agents.models import BeatPlanItem
 
 from textwrap import dedent
 
+
 def _beat_defs(program_type: str) -> str:
-  
-  if program_type == "Community Grant":  
-    return dedent(
-      """\
+
+    if program_type == "Community Grant":
+        return dedent(
+            """\
       Beats:
       A: Purpose & Fit
       B: Excellence / Proof
@@ -14,22 +15,23 @@ def _beat_defs(program_type: str) -> str:
       D: Leadership & Character
       E: Reflection & Growth
       """
-      )
-  elif program_type == "Graduate":
-    # TODO Create a prompt here.
-    return dedent(
-      """\
+        )
+    elif program_type == "Graduate":
+        # TODO Create a prompt here.
+        return dedent(
+            """\
       For example, the user may (a) be applying to a PhD (research) program and \
       (b) have research experience on their resume. Suppose you are working on beat A: Purpose & Fit. \
       In this case, you should output anchors to both the fact that the PhD is a research program and \
       their past experience in research. You may say that missing information includes the research \
       fit between the two, or the motivation the user has to commit to a research program.
       """
-    )
-    pass
+        )
+        pass
 
-  else:
-    raise Exception("Unkown scholarship type is passed.")
+    else:
+        raise Exception("Unkown scholarship type is passed.")
+
 
 def beat_planner_messages(program_type: str, redacted_input: str):
 
@@ -49,15 +51,23 @@ def beat_planner_messages(program_type: str, redacted_input: str):
 
     For each beat, output:
     - beat: one of A,B,C,D,E.
-    - missing: 2-4 short, specific missing details needed to write that beat,
+    - missing: 2-4 short, specific missing details needed to write that beat, \
       grounded in the redacted input (reference the section name when possible).
-    - guidance: one actionable hint (<= 20 words). Tailor this to 
-    - anchors: 2-4 exact phrases copied verbatim from the redacted input (each <= 6 words)
+    - guidance: one actionable hint (<= 20 words). Tailor this to the opportunity \
+        listed in the redacted input. For example, if it is a scholarship for community service, \
+        and asks for examples of community service\
+    - anchors: 2-4 exact phrases copied verbatim from the redacted input (each <= 6 words) \
       that are relevant to this beat, along with where they appear.
-      
-    Constraints:
-    - Include A,B,C,D,E exactly once.
-    - If the input lacks anchors for a beat, set anchors=[] and put the needed specifics in missing.
+    
+    For example, the user may (a) be applying to a PhD (research) program and \
+      (b) have research experience on their resume. Suppose you are working on beat A: Purpose & Fit. \
+      In this case, for anchors, you should output anchors to the fact that the PhD is a research program and \
+      that they have past experience in research. \
+      For missing, You may include that missing information includes the research \
+      fit between the two, or the motivation the user has to commit to a research program, or a specific \
+      illustrative anecdote for a specific trait requested by admissions committees, such as intelligence, \
+      persistence, and so on. \
+      For guidance, you may give a hint such as `
     """
     )
 
@@ -76,9 +86,10 @@ def beat_planner_messages(program_type: str, redacted_input: str):
         {"role": "user", "content": rules + "\n\n" + user_ctx},
     ]
 
-def question_generator_messages(task: BeatPlanItem, 
-                                program_type: str,
-                                redacted_input: str):
+
+def question_generator_messages(
+    task: BeatPlanItem, program_type: str, redacted_input: str
+):
     system = dedent(
         """\
     You generate tailored questions to help an applicant write their Statement of Purpose.
