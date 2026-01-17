@@ -19,6 +19,7 @@ import re
 from textwrap import dedent
 
 
+
 _set_env("COHERE_API_KEY")
 
 llm = ChatCohere(
@@ -147,7 +148,6 @@ def question_generator_worker(worker_state: dict[str, Any]) -> dict[str, Any]:
     redacted_input = worker_state["redacted_input"]
 
     questions = question_generator_node(task, redacted_input)
-
     return {"questions_by_beat": {task.beat: questions}}
 
 
@@ -223,10 +223,6 @@ def regenerate_questions(failed_beats: list[str],
     return sends
 
 def validator_node(state: PipelineState) -> Command | dict:
-    # Placeholder for validation logic
-    # return {"validation_report": ValidationReport(ok=True)}
-    
-    # Real implementations
     try:
         source_text = state["redacted_input"]
         source_norm = _norm(source_text)
@@ -302,7 +298,7 @@ def validator_node(state: PipelineState) -> Command | dict:
             goto=sends,
         )
     except Exception as e:
-        print(f"The following error occured: {e}")
+        raise Exception(f"Validator failed due to {e}.")
         
 
 def create_graph():
@@ -324,24 +320,10 @@ def create_graph():
     graph = builder.compile()
     return graph
 
-def run_pipeline(user_input : UserInput) -> dict[Beat, list[QuestionObject]]:
-    """
-    Exapmle of an user input:
-    exp1 = {
-    "scholarship_name": "Vector scholarships",
-    "program_type": "Community Leadership",
-    "goal_one_liner": "Machine Learning Workshop hosts for academic engagement.",
-    "resume_points": [
-        "Led a team of 5 in developing a 3D CNN to decode emotional state from 7tfMRI brain images, improved the test accuracy to 80%."
-        "Organized and hosted weekly study paper reading groups for over 15 students in transformers.",
-        "Conducted research under Prof Geoffery Hinton, resulting in a published paper in a Neurlps 2025 conference.",
-        ],
-    }
-    """
-    
+def run_pipeline(user_input: UserInput) -> dict[Beat, list[QuestionObject]]:
     try:
         graph = create_graph()
         out = graph.invoke({"user_input": user_input})
         return out
     except Exception as e:
-        print(f"Exception occured due to {e}.")
+        raise Exception(f"Pipeline failed due to {e}.")
