@@ -71,4 +71,3 @@ def _validate_question_text(q: str) -> list[str]:
         reasons.append("Question references redaction placeholders (e.g., <NAME>).")
     return reasons
 
-        
