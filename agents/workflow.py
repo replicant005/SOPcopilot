@@ -251,10 +251,7 @@ def regenerate_questions(failed_beats: list[str],
 
 
 def validator_node(state: PipelineState) -> Command | dict:
-    # Placeholder for validation logic
-    # return {"validation_report": ValidationReport(ok=True)}
-
-    # Real implementations
+    """Node to validate the output."""
     try:
         source_text = state["redacted_input"]
         source_norm = _norm(source_text)
