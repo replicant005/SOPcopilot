@@ -345,7 +345,7 @@ def run_pipeline(user_input : dict) -> dict[Beat, list[QuestionObject]]:
     """
     
     try:
-        validated_input = UserInput.model_validate(user_input)
+        # validated_input = UserInput.model_validate(user_input)
         graph = create_graph()
         out = graph.invoke({"user_input": validated_input})
         return out
