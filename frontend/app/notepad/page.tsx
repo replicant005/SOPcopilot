@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+// import { PiiSanitizer } from '@cdssnc/sanitize-pii';
 
 /* =====================
    Types
@@ -15,6 +16,7 @@ type Beat = {
   description: string;
   questions: string[];
 };
+
 
 /* =====================
    Page
@@ -36,71 +38,71 @@ export default function QuestionEngine() {
 
   /* -------- Beats -------- */
   const beats: Beat[] = [
-    {
-      key: "A",
-      title: "Purpose & Fit",
-      description: "Why this scholarship, why now, why you.",
-      questions: [
-        "What specifically about this scholarship aligns with your goals right now?",
-        "Why are you uniquely positioned to benefit from it?",
-      ],
-    },
-    {
-      key: "B",
-      title: "Proof of Excellence",
-      description: "Concrete evidence of ability and outcomes.",
-      questions: [
-        "What is one experience that best demonstrates your excellence?",
-        "What measurable outcome resulted from your actions?",
-      ],
-    },
-    {
-      key: "C",
-      title: "Impact / Community",
-      description: "Who benefits and how change is created.",
-      questions: [
-        "Who benefits from your work beyond yourself?",
-        "How would you measure the impact you create?",
-      ],
-    },
-    {
-      key: "D",
-      title: "Leadership & Character",
-      description: "Responsibility, tradeoffs, collaboration.",
-      questions: [
-        "Describe a difficult tradeoff you had to make.",
-        "How did others rely on your judgment or leadership?",
-      ],
-    },
-    {
-      key: "E",
-      title: "Reflection & Growth",
-      description: "How your thinking has changed.",
-      questions: [
-        "What did this experience change about how you think?",
-        "What will you carry forward from it?",
-      ],
-    },
+    // {
+    //   key: "A",
+    //   title: "Purpose & Fit",
+    //   description: "Why this scholarship, why now, why you.",
+    //   questions: [
+    //     "What specifically about this scholarship aligns with your goals right now?",
+    //     "Why are you uniquely positioned to benefit from it?",
+    //   ],
+    // },
+    // {
+    //   key: "B",
+    //   title: "Proof of Excellence",
+    //   description: "Concrete evidence of ability and outcomes.",
+    //   questions: [
+    //     "What is one experience that best demonstrates your excellence?",
+    //     "What measurable outcome resulted from your actions?",
+    //   ],
+    // },
+    // {
+    //   key: "C",
+    //   title: "Impact / Community",
+    //   description: "Who benefits and how change is created.",
+    //   questions: [
+    //     "Who benefits from your work beyond yourself?",
+    //     "How would you measure the impact you create?",
+    //   ],
+    // },
+    // {
+    //   key: "D",
+    //   title: "Leadership & Character",
+    //   description: "Responsibility, tradeoffs, collaboration.",
+    //   questions: [
+    //     "Describe a difficult tradeoff you had to make.",
+    //     "How did others rely on your judgment or leadership?",
+    //   ],
+    // },
+    // {
+    //   key: "E",
+    //   title: "Reflection & Growth",
+    //   description: "How your thinking has changed.",
+    //   questions: [
+    //     "What did this experience change about how you think?",
+    //     "What will you carry forward from it?",
+    //   ],
+    // },
   ];
 
   /* =====================
      Effects
   ===================== */
 
-  // Gradually reveal questions when user types
-  useEffect(() => {
-    if (step !== 3) return;
-    if (answer.length < 40) return;
+//   // Gradually reveal questions when user types
+//   useEffect(() => {
+//     if (step !== 3) return;
+//     if (answer.length < 40) return;
 
-    beats.forEach((beat) => {
-      if (!visibleQuestions[beat.key]) {
-        setVisibleQuestions((prev) => ({
-          ...prev,
-          [beat.key]: 1,
-        }));
-      }
-    });
-  }, [answer, step]);
+//     beats.forEach((beat) => {
+//       if (!visibleQuestions[beat.key]) {
+//         setVisibleQuestions((prev) => ({
+//           ...prev,
+//           [beat.key]: 1,
+//         }));
+//       }
+//     });
+//   }, [answer, step]);
 
   /* =====================
      Helpers
@@ -121,7 +123,7 @@ export default function QuestionEngine() {
   ===================== */
 
   return (
-    <div className="min-h-screen pt-[120px] px-6 flex justify-center">
+    <div className="min-h-screen pt-[140px] px-6 flex justify-center">
       <div className="w-full max-w-3xl relative">
 
         {/* Restart */}
@@ -137,7 +139,7 @@ export default function QuestionEngine() {
         {/* ================= STEP 1 ================= */}
         {step === 1 && (
           <div className="rounded-2xl bg-white/70 backdrop-blur p-8 shadow-sm space-y-6">
-            <h1 className="text-xl font-medium">Start with the essentials</h1>
+            <h1 className="text-xl font-medium">Start by filling out your information.</h1>
 
             <input
               className="w-full p-3 text-sm rounded-lg border border-gray-200 focus:outline-none"
@@ -169,7 +171,7 @@ export default function QuestionEngine() {
 
             <button
               onClick={() => setStep(2)}
-              className="mt-2 px-5 py-2 rounded-full bg-black text-white text-sm hover:opacity-80 transition"
+              className="mt-2 px-5 py-2 rounded-full bg-[#F34E39] text-white text-sm hover:opacity-80 transition"
             >
               continue
             </button>
@@ -187,7 +189,7 @@ export default function QuestionEngine() {
 
             <button
               onClick={() => setStep(3)}
-              className="mt-4 px-5 py-2 rounded-full bg-black text-white text-sm hover:opacity-80 transition"
+              className="mt-4 px-5 py-2 rounded-full bg-[#F34E39] text-white text-sm hover:opacity-80 transition"
             >
               begin writing
             </button>
@@ -201,7 +203,7 @@ export default function QuestionEngine() {
             {/* Answer box */}
             <textarea
               className="w-full min-h-[140px] p-4 text-sm rounded-xl border border-gray-200 focus:outline-none"
-              placeholder="Start writing. Questions will adapt as you go."
+              placeholder="Start writing."
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
             />
