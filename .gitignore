@@ -25,6 +25,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+UofTHacks-13-Hacker-Package.pdf
 
 .idea/
 .vscode/
@@ -179,3 +180,4 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
