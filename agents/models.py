@@ -10,7 +10,7 @@ Beat = Literal["A", "B", "C", "D", "E"]
 
 class UserInput(BaseModel):
     scholarship_name: str
-    program_type: Literal["Undergrad", "Graduate","Community Leadership"]
+    program_type: Literal["Undergrad", "Graduate", "Community Grant"]
     goal_one_liner: str
     resume_points: list[str]
 
