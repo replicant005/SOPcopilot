@@ -65,7 +65,7 @@ export default function ResultsPage() {
                 className="px-4 py-2 rounded-full border border-[#0956A9] text-[#0956A9] text-sm hover:border-[#63A0E8] hover:text-[#63A0E8] transition-colors"
                 onClick={() => router.push("/notepad/run")}
               >
-                Regenerate
+                Regenerate Questions
               </button>
               <button
                 className="px-4 py-2 rounded-full bg-[#0956A9] text-white text-sm hover:bg-[#63A0E8] transition-colors"
