@@ -187,7 +187,7 @@ export default function RunPage() {
           {/* PII panel */}
           {piiSpans.length > 0 && (
             <div className="mt-4 rounded-xl border border-gray-200 bg-white p-3">
-              <div className="text-xs font-medium mb-2">PII detected (redacting personal information)</div>
+              <div className="text-xs font-medium mb-2">Redacted Personal Information</div>
               <ul className="text-xs text-gray-700 space-y-1">
                 {piiSpans.map((s, i) => (
                   <li key={i}>
