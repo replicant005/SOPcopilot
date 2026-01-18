@@ -23,10 +23,10 @@ export default function Homepage() {
           window.requestAnimationFrame(() => {
             const y = window.scrollY;
     
-            bannerRef.current!.style.transform = `translateY(${y * 0.15}px)`;
+            bannerRef.current!.style.transform = `translateY(${y * 0.2}px)`;
             pacmanRef.current!.style.transform = `translateY(${y * 0.45}px)`;
-            heroRef.current!.style.transform = `translateY(${y * 0.1}px)`;
-            subtitleRef.current!.style.transform = `translateY(${y * 0.12}px)`;
+            heroRef.current!.style.transform = `translateY(${y * 0.10}px)`;
+            subtitleRef.current!.style.transform = `translateY(${y * 0.2}px)`;
             aboutRef.current!.style.transform = `translateY(${y * 0.18}px)`;
             // aboutPara.current!.style.transform = `translateY(${y * 0.18}px)`;
             lowerRef.current!.style.transform = `translateY(${y * 0.3}px)`;
@@ -56,12 +56,12 @@ export default function Homepage() {
               className="absolute left-0 top-7 z-10 will-change-transform"
             />
 
-            <div ref={pacmanRef} className="absolute left-35 top-35 z-20 will-change-transform">
+            <div ref={pacmanRef} className="absolute left-51 top-40 z-20 will-change-transform opacity-35">
             <Image
-              src="/pencil1.png"
+              src="/small_stick.png"
               alt="pencil icon"
-              width={90}
-              height={100}
+              width={15}
+              height={10}
             />
             </div>
 
@@ -69,7 +69,7 @@ export default function Homepage() {
             {/* HERO TEXT that doesnt move */}
             <div
               ref={heroRef}
-              className="absolute left-65 top-34 z-20 max-w-xl"
+              className="absolute left-60 top-34 z-20 max-w-xl"
               style={{ transform: `translateY(${scrollY * 0.1}px)` }}
             >
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight">
@@ -84,8 +84,8 @@ export default function Homepage() {
             {/* SUBTITLE */}
             <div
               ref={subtitleRef}
-              className="absolute left-65 top-75 z-20"
-              style={{ transform: `translateY(${scrollY * 0.12}px)` }}
+              className="absolute left-60 top-75 z-20"
+              style={{ transform: `translateY(${scrollY * 0.1}px)` }}
             >
               <h2 className="text-2xl md:text-3xl font-medium tracking-wide">
                 write. create. explore.
@@ -110,7 +110,7 @@ export default function Homepage() {
               className="absolute left-70 top-270 max-w-md z-20"
             >
               <p className="text-base md:text-lg leading-relaxed text-[#3071D2]">
-              Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+               Lorem Ipsum is simply dummy text of the printing and typesetting industry.
                Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, 
                when an unknown printer took a galley of type and scrambled it to make a type 
                specimen book. It has survived not only five centuries, but also the leap into 
