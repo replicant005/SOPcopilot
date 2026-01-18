@@ -12,8 +12,8 @@ Video Demo: ...
 
 # Quick Start
 You will need to run both a frontend and backend server. Start with the backend.
-### Download the Directory
-Then start a terminal at the directory you just downloaded, ``SOPcopilot``.
+### Download the Directory and Start a Terminal
+Click the download button, then start a terminal at the directory you just downloaded, ``SOPcopilot``.
 
 ### Initialize a virtual environment and install dependencies
 Ensure your new terminal is in the root directory, ``SOPcopilot``. Then, run:
