@@ -167,7 +167,7 @@ export default function RunPage() {
           <div className="flex items-center justify-between">
             <div className="font-medium">Streaming pipeline</div>
             <div className="text-sm text-gray-600">
-              {isLoading ? "Running…" : done ? "Complete" : `Stopped: ${error}`}
+              {isLoading ? "Running…" : done ? "Complete" : "In Progress..."}
             </div>
           </div>
 
