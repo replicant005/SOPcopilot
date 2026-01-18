@@ -1,7 +1,8 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 
-export default function ThoughtMirror() {
+export default function FAQ() {
     return (
         <div
             className="relative flex items-center justify-center min-h-screen bg-no-repeat bg-cover px-6
@@ -12,29 +13,51 @@ export default function ThoughtMirror() {
                 backgroundPosition: "center ",
             }}
         >
+                <Image
+                    src="/green.svg"
+                    alt="Green line decor"
+                    width={1300}
+                    height={1100}
+                    className="absolute left-10 top-20 z-1"
+                />
+            
+            
 
             {/* Content Box */}
-            <div className="absolute bg-transparent bg-opacity-80 p-10 rounded-lg max-w-3xl text-center">
-                <Image
-                    src="/Group 13.svg"
-                    alt="taketime-text"
-                    width={600}
-                    height={800}
-                    className="absolute right-34 bottom-40 rotate-0 transform translate-x-100"
-                />
+            <div className="mt-15 ml-40 flex items-start gap-20 max-w-[1000px]">
 
-                <div className="transform translate-y-40 translate-x-40 mx-auto" style={{ minWidth: "800px" }}>
-                    <p className="text-xs text-gray-700 mt-4 text-right" style={{fontSize: "19px"}}>
-                        <strong>XXX</strong> meowmeoewmeowmeow
-                    </p>
-                    <p className="text-xs text-gray-700 mt-4 text-right" style={{fontSize: "19px"}}>
-                        Meow meow meow moew? meow meow...
-                    </p>
-                    <p className="text-xs text-gray-700 mt-4 text-right" style={{fontSize: "19px"}}>
-                        Start writing your true self today. meow
-                    </p>
-                </div>
+            {/* Text Content */}
+            <div className="max-w-[800px]">
+            <p className="text-gray-700 mt-4 text-left text-[19px]">
+                <strong>Why did we create Squill?</strong>
+            </p>
+
+            <p className="text-gray-700 mt-4 text-left text-[19px]">
+                We created Squill after noticing a significant disconnect between students and available scholarship opportunities.
+                Each year, over $100 million in U.S. scholarships goes unclaimed due to a lack of applicants (Forbes).
+                Squill bridges this gap by making the application process clearer, more accessible, and easier to navigate.
+            </p>
+
+            <p className="text-gray-700 mt-4 text-left text-[19px]">
+                <strong>How do I use Squill?</strong>
+            </p>
+
+            <p className="text-gray-700 mt-4 text-left text-[19px]">
+                Squill is designed to help you write Statements of Purpose for applications ranging from graduate school to scholarships.
+                Start by clicking on <strong>notepad</strong> in the top left of the page, then follow the guided prompts.
+            </p>
             </div>
-        </div>
+
+            {/* Start Now Button */}
+            {/* <Link href="/notepad">
+            <button className="whitespace-nowrap rounded-full bg-green-600 px-8 py-4 text-white text-lg font-semibold
+                                hover:bg-green-700 transition-colors self-start">
+                Start Now
+            </button>
+            </Link> */}
+
+            </div>
+
+            </div>
     );
 }

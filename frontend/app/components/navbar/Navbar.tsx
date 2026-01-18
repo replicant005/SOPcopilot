@@ -21,10 +21,10 @@ export default function Navbar() {
       <div className="flex justify-between items-center w-full max-w-[98%] mx-auto">
         <Link href="/">
           <Image
-            src="/icon1.svg"
+            src="/lightbulb_icon.svg"
             alt="Logo"
-            width={80}
-            height={70}
+            width={50}
+            height={50}
             priority
           />
         </Link>
