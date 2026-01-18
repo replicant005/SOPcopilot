@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 type Program = "Undergrad" | "Graduate" | "Community Grant";
 
@@ -22,6 +22,24 @@ export default function InputPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [bannerError, setBannerError] = useState<string | null>(null);
   const [isChecking, setIsChecking] = useState(false);
+
+  // Load values from sessionStorage on mount to persist text during user session
+  useEffect(() => {
+    const raw = sessionStorage.getItem("pipeline_payload");
+    if (raw) {
+      try {
+        const payload = JSON.parse(raw);
+        if (payload.scholarship_name) setScholarship(payload.scholarship_name);
+        if (payload.program_type) setProgram(payload.program_type);
+        if (payload.goal_one_liner) setSentence(payload.goal_one_liner);
+        if (payload.resume_points?.[0]) setResume1(payload.resume_points[0]);
+        if (payload.resume_points?.[1]) setResume2(payload.resume_points[1]);
+        if (payload.resume_points?.[2]) setResume3(payload.resume_points[2]);
+      } catch (e) {
+        console.error("Failed to load saved form data", e);
+      }
+    }
+  }, []);
 
   function clearErrors() {
     setFieldErrors({});
