@@ -311,22 +311,37 @@ from agents.models import BeatPlanItem
 
 def _beat_defs(program_type: str) -> str:
   
-  if program_type == "Community Grant":  
-    return dedent(
-      """\
-      Beats:
-      A: Purpose & Fit
-      B: Excellence / Proof
-      C: Impact
-      D: Leadership & Character
-      E: Reflection & Growth
-      """
-      )
-  elif program_type == "Graduate":
-    # TODO Create a prompt here.
-    pass
+ if program_type == "Community Grant":
+    return dedent("""\
+    Beats:
+    A: Purpose & Fit - Community need, grant alignment
+    B: Excellence / Proof - Concrete community projects, measurable outcomes
+    C: Impact - Community beneficiaries, sustainable change
+    D: Leadership & Character - Grassroots leadership, coalition building
+    E: Reflection & Growth - Community work lessons, future vision
+    """)
 
-  else:
+ elif program_type == "Graduate":
+    return dedent("""\
+    Beats:
+    A: Purpose & Fit - Research interests, specialization alignment
+    B: Excellence / Proof - Research experience, publications, academic rigor
+    C: Impact - Contribution to field, future research potential
+    D: Leadership & Character - Research collaboration, mentorship, integrity
+    E: Reflection & Growth - Research evolution, methodology growth
+    """)
+
+ elif program_type == "Undergrad":
+    return dedent("""\
+    Beats:
+    A: Purpose & Fit - Early academic journey, scholarship alignment
+    B: Excellence / Proof - Academic achievements, early projects
+    C: Impact - Local community impact, future potential
+    D: Leadership & Character - Club leadership, peer collaboration
+    E: Reflection & Growth - Early learning experiences, growth trajectory
+    """)
+ else :
+    pass
     raise Exception("Unkown scholarship type is passed.")
 
 def beat_planner_messages(program_type: str, redacted_input: str):

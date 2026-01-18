@@ -72,30 +72,31 @@ def make_redactor_node(
     }
 
     def redactor_node(state: "PipelineState") -> dict[str, Any]:
+        t0 = perf_counter()
         user_input = state["user_input"]
         canonical = _build_canonical_input(user_input)
 
-        results = analyzer.analyze(
-            text=canonical,
-            language=language,
-            entities=entities,
-        )
+        start_patch = log_event(state, "redactor", "start", {"len_canonical": len(canonical)})
+
+        results = analyzer.analyze(text=canonical, language=language, entities=entities)
 
         pii_spans = [
             PiiSpan(
-                start=r.start,
-                end=r.end,
-                pii_type=r.entity_type,
+                start=r.start, end=r.end, pii_type=r.entity_type,
                 confidence=float(r.score) if r.score is not None else None,
             )
             for r in results
         ]
 
         redacted = anonymizer.anonymize(
-            text=canonical,
-            analyzer_results=results,
-            operators=operators,
+            text=canonical, analyzer_results=results, operators=operators
         ).text
+
+        dt_ms = (perf_counter() - t0) * 1000
+        end_patch = log_event(
+            state, "redactor", "end",
+            {"pii_count": len(pii_spans), "latency_ms": round(dt_ms, 2)}
+        )
 
         return {
             "canonical_input": canonical,
@@ -103,6 +104,8 @@ def make_redactor_node(
             "redacted_input": redacted,
             "attempt_count": state.get("attempt_count", 0),
             "questions_by_beat": state.get("questions_by_beat", {}),
+            **start_patch,
+            **end_patch,
         }
 
     return redactor_node
@@ -385,17 +388,13 @@ def validator_node(state: PipelineState) -> Command | dict:
         
         base_log = log_event(
             state,
-            "validator"
+            "validator",
             "checked",
-            {
-                "ok": ok,
-                "failed_beats": failed_beats,
-                "num_failed_beats": len(failed_beats)
-            }
+            {"ok": ok, "failed_beats": failed_beats, "num_failed_beats": len(failed_beats)}
         )
 
         if ok:
-            return Command(update={"validation_report": report}, goto=END)
+            return Command(update={"validation_report": report, **base_log}, goto=END)
 
         attempt = int(state.get("attempt_count") or 0) + 1
         report.repairs_applied.append(
@@ -466,6 +465,7 @@ def create_graph():
     return graph
 
 
+GRAPH = create_graph()
 def run_pipeline(user_input: UserInput) -> dict[Beat, list[QuestionObject]]:
     """
     Exapmle of an user input:
@@ -485,8 +485,7 @@ def run_pipeline(user_input: UserInput) -> dict[Beat, list[QuestionObject]]:
     """
 
     try:
-        graph = create_graph()
-        out = graph.invoke({"user_input": user_input})
+        out = GRAPH.invoke({"user_input": user_input})
         return out
     except Exception as e:
         print(f"Exception occured due to {type(e)} as follows | {e}.")
