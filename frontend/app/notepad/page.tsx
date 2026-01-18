@@ -17,6 +17,23 @@ type Beat = {
   questions: string[];
 };
 
+type ProgramType = "Undergrad" | "Graduate" | "Research" | "Community Leadership" | "PHD" | "Other";
+
+type QuestionObject = {
+  beat: BeatKey;
+  question: string;
+  intent: string;
+};
+
+type ApiResponse = {
+  final_questions_by_beat: Record<BeatKey, QuestionObject[]>;
+  beat_plan?: Array<{
+    beat: BeatKey;
+    missing: string[];
+    guidance?: string;
+  }>;
+};
+
 
 /* =====================
    Page
@@ -27,7 +44,7 @@ export default function QuestionEngine() {
 
   /* -------- Inputs -------- */
   const [scholarship, setScholarship] = useState("");
-  const [program, setProgram] = useState("undergrad");
+  const [program, setProgram] = useState<ProgramType>("Undergrad");
   const [sentence, setSentence] = useState("");
   const [resume1, setResume1] = useState("");
   const [resume2, setResume2] = useState("");
@@ -35,55 +52,84 @@ export default function QuestionEngine() {
   /* -------- Writing -------- */
   const [answer, setAnswer] = useState("");
   const [visibleQuestions, setVisibleQuestions] = useState<Record<string, number>>({});
+  
+  /* -------- API State -------- */
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
+  const [beats, setBeats] = useState<Beat[]>([]);
 
-  /* -------- Beats -------- */
-  const beats: Beat[] = [
-    // {
-    //   key: "A",
-    //   title: "Purpose & Fit",
-    //   description: "Why this scholarship, why now, why you.",
-    //   questions: [
-    //     "What specifically about this scholarship aligns with your goals right now?",
-    //     "Why are you uniquely positioned to benefit from it?",
-    //   ],
-    // },
-    // {
-    //   key: "B",
-    //   title: "Proof of Excellence",
-    //   description: "Concrete evidence of ability and outcomes.",
-    //   questions: [
-    //     "What is one experience that best demonstrates your excellence?",
-    //     "What measurable outcome resulted from your actions?",
-    //   ],
-    // },
-    // {
-    //   key: "C",
-    //   title: "Impact / Community",
-    //   description: "Who benefits and how change is created.",
-    //   questions: [
-    //     "Who benefits from your work beyond yourself?",
-    //     "How would you measure the impact you create?",
-    //   ],
-    // },
-    // {
-    //   key: "D",
-    //   title: "Leadership & Character",
-    //   description: "Responsibility, tradeoffs, collaboration.",
-    //   questions: [
-    //     "Describe a difficult tradeoff you had to make.",
-    //     "How did others rely on your judgment or leadership?",
-    //   ],
-    // },
-    // {
-    //   key: "E",
-    //   title: "Reflection & Growth",
-    //   description: "How your thinking has changed.",
-    //   questions: [
-    //     "What did this experience change about how you think?",
-    //     "What will you carry forward from it?",
-    //   ],
-    // },
-  ];
+  /* =====================
+     API Call
+  ===================== */
+
+  const callPipelineApi = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Prepare request body matching backend schema
+      const requestBody = {
+        scholarship_name: scholarship,
+        program_type: program,
+        goal_one_liner: sentence,
+        resume_points: [resume1, resume2].filter((point) => point.trim() !== ""),
+      };
+
+      // Call backend API
+      // TODO: Update this URL to match your backend server
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const response = await fetch(`${API_URL}/api/pipeline/run`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to generate questions");
+      }
+
+      const data: ApiResponse = await response.json();
+      setApiResponse(data);
+
+      // Transform API response to Beat format
+      const transformedBeats: Beat[] = Object.entries(data.final_questions_by_beat || {})
+        .map(([key, questions]) => {
+          const beatKey = key as BeatKey;
+          const beatTitles: Record<BeatKey, { title: string; description: string }> = {
+            A: { title: "Purpose & Fit", description: "Why this scholarship, why now, why you." },
+            B: { title: "Proof of Excellence", description: "Concrete evidence of ability and outcomes." },
+            C: { title: "Impact / Community", description: "Who benefits and how change is created." },
+            D: { title: "Leadership & Character", description: "Responsibility, tradeoffs, collaboration." },
+            E: { title: "Reflection & Growth", description: "How your thinking has changed." },
+          };
+
+          return {
+            key: beatKey,
+            ...beatTitles[beatKey],
+            questions: questions.map((q) => q.question),
+          };
+        })
+        .sort((a, b) => a.key.localeCompare(b.key)); // Sort A-E
+
+      setBeats(transformedBeats);
+
+      // Show all questions immediately
+      const initialVisible: Record<string, number> = {};
+      transformedBeats.forEach((beat) => {
+        initialVisible[beat.key] = beat.questions.length;
+      });
+      setVisibleQuestions(initialVisible);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+      console.error("API Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /* =====================
      Effects
@@ -116,6 +162,10 @@ export default function QuestionEngine() {
     setResume2("");
     setAnswer("");
     setVisibleQuestions({});
+    setBeats([]);
+    setApiResponse(null);
+    setError(null);
+    setLoading(false);
   };
 
   /* =====================
@@ -155,6 +205,19 @@ export default function QuestionEngine() {
               onChange={(e) => setSentence(e.target.value)}
             />
 
+            <select
+              className="w-full p-3 text-sm rounded-lg border border-gray-200 focus:outline-none"
+              value={program}
+              onChange={(e) => setProgram(e.target.value as ProgramType)}
+            >
+              <option value="Undergrad">Undergraduate</option>
+              <option value="Graduate">Graduate</option>
+              <option value="Research">Research</option>
+              <option value="Community Leadership">Community Leadership</option>
+              <option value="PHD">PhD</option>
+              <option value="Other">Other</option>
+            </select>
+
             <input
               className="w-full p-3 text-sm rounded-lg border border-gray-200"
               placeholder="Resume point #1"
@@ -183,15 +246,37 @@ export default function QuestionEngine() {
           <div className="rounded-2xl bg-white/70 p-8 space-y-4 text-sm">
             <h2 className="font-medium">Quick system checks</h2>
 
-            <p className="text-gray-600">PII scan complete</p>
-            <p className="text-gray-600">Inputs validated</p>
-            <p className="text-green-700">✓ Ready to generate questions</p>
+            {loading ? (
+              <>
+                <p className="text-gray-600 animate-pulse">Processing your input...</p>
+                <p className="text-gray-600 animate-pulse">PII scan in progress</p>
+                <p className="text-gray-600 animate-pulse">Generating questions...</p>
+              </>
+            ) : (
+              <>
+                <p className="text-gray-600">PII scan complete</p>
+                <p className="text-gray-600">Inputs validated</p>
+                <p className="text-green-700">✓ Ready to generate questions</p>
+              </>
+            )}
+
+            {error && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-700 text-xs">{error}</p>
+              </div>
+            )}
 
             <button
-              onClick={() => setStep(3)}
-              className="mt-4 px-5 py-2 rounded-full bg-[#F34E39] text-white text-sm hover:opacity-80 transition"
+              onClick={async () => {
+                await callPipelineApi();
+                if (!error) {
+                  setStep(3);
+                }
+              }}
+              disabled={loading}
+              className="mt-4 px-5 py-2 rounded-full bg-[#F34E39] text-white text-sm hover:opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              begin writing
+              {loading ? "Generating..." : "begin writing"}
             </button>
           </div>
         )}
