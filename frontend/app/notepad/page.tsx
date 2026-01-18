@@ -23,20 +23,22 @@ export default function InputPage() {
   const [bannerError, setBannerError] = useState<string | null>(null);
   const [isChecking, setIsChecking] = useState(false);
 
-  // Load values from sessionStorage on mount to persist text during user session
+  // **Load saved payload when coming back from /notepad/run**
   useEffect(() => {
-    const raw = sessionStorage.getItem("pipeline_payload");
-    if (raw) {
+    const saved = sessionStorage.getItem("pipeline_payload");
+    if (saved) {
       try {
-        const payload = JSON.parse(raw);
-        if (payload.scholarship_name) setScholarship(payload.scholarship_name);
-        if (payload.program_type) setProgram(payload.program_type);
-        if (payload.goal_one_liner) setSentence(payload.goal_one_liner);
-        if (payload.resume_points?.[0]) setResume1(payload.resume_points[0]);
-        if (payload.resume_points?.[1]) setResume2(payload.resume_points[1]);
-        if (payload.resume_points?.[2]) setResume3(payload.resume_points[2]);
-      } catch (e) {
-        console.error("Failed to load saved form data", e);
+        const data = JSON.parse(saved);
+        if (data.scholarship_name) setScholarship(data.scholarship_name);
+        if (data.program_type) setProgram(data.program_type);
+        if (data.goal_one_liner) setSentence(data.goal_one_liner);
+        if (Array.isArray(data.resume_points)) {
+          setResume1(data.resume_points[0] || "");
+          setResume2(data.resume_points[1] || "");
+          setResume3(data.resume_points[2] || "");
+        }
+      } catch {
+        // If parsing fails, ignore
       }
     }
   }, []);
@@ -101,7 +103,7 @@ export default function InputPage() {
     "w-full p-3 text-sm rounded-lg border placeholder-gray-400 text-[#0956A9] border-[#0956A9]";
 
   return (
-    
+
     <div className="min-h-screen pt-[120px] px-6 flex justify-center">
       <div className="w-full max-w-3xl rounded-2xl bg-white/70 p-8 space-y-4">
         <h1 className="text-xl font-medium">To start, fill in the following information</h1>
@@ -156,7 +158,7 @@ export default function InputPage() {
 
         <div>
           <label className="block mb-1 font-medium text-[0.7rem]">Resume Point #1</label>
-          <input
+          <textarea
             className={inputStyle}
             value={resume1}
             onChange={(e) => setResume1(e.target.value)}
@@ -166,7 +168,7 @@ export default function InputPage() {
 
         <div>
           <label className="block mb-1 font-medium text-[0.7rem]">Resume Point #2</label>
-          <input
+          <textarea
             className={inputStyle}
             value={resume2}
             onChange={(e) => setResume2(e.target.value)}
@@ -176,7 +178,7 @@ export default function InputPage() {
 
         <div>
           <label className="block mb-1 font-medium text-[0.7rem]">Resume Point #3</label>
-          <input
+          <textarea
             className={inputStyle}
             value={resume3}
             onChange={(e) => setResume3(e.target.value)}
@@ -187,13 +189,32 @@ export default function InputPage() {
           ))}
         </div>
 
+        <div className="flex gap-4 mt-4">
+  <button
+    onClick={validateAndRun}
+    className="px-5 py-2 rounded-full bg-[#0956A9] text-white text-sm disabled:opacity-50 hover:bg-[#63A0E8] transition-colors"
+    disabled={isChecking || !scholarship || !sentence || !resume1}
+  >
+    {isChecking ? "Checking…" : "Submit"}
+  </button>
+
         <button
-          onClick={validateAndRun}
-          className="px-5 py-2 rounded-full bg-[#0956A9] text-white text-sm disabled:opacity-50 hover:bg-[#63A0E8] transition-colors"
-          disabled={isChecking || !scholarship || !sentence || !resume1}
+          type="button"
+          onClick={() => {
+            setScholarship("");
+            setProgram("Undergrad");
+            setSentence("");
+            setResume1("");
+            setResume2("");
+            setResume3("");
+            clearErrors();
+            sessionStorage.removeItem("pipeline_payload");
+          }}
+          className="px-5 py-2 rounded-full border border-[#0956A9] bg-white text-[#0956A9] text-sm hover:bg-[#63A0E8] hover:text-white transition-colors"
         >
-          {isChecking ? "Checking…" : "Submit"}
+          Clear
         </button>
+      </div>
       </div>
     </div>
     

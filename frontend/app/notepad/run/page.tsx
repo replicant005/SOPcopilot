@@ -213,52 +213,56 @@ export default function RunPage() {
           {/* Audit panel */}
           <div className="mt-4 rounded-xl border border-gray-200 bg-white p-3 max-h-80 overflow-auto">
             <div className="text-xs font-medium mb-2">Live Updates</div>
-            <ul className="space-y-1 text-xs text-gray-700">
-              {audit.slice(-80).map((a, i) => (
-                <li key={i} className="py-1">
-                  <div>
-                    <span className="text-gray-500">{fmtTs(a.ts_ms)}</span>
-                    <span className="ml-2 font-mono">{a.agent ?? "?"}</span>
-                    <span className="ml-2">{a.event ?? "update"}</span>
+            <ul className="space-y-1 text-xs">
+              {audit.slice(-80).map((a, i) => {
+                const colors = ["#F24F39", "#F3792D", "#F0A718", "#267239", "#0B56A8"];
+                const color = colors[i % colors.length];
+
+                return (
+                  <li key={i} className="py-1" style={{ color }}>
+                    <div>
+                      <span className="text-gray-500">{fmtTs(a.ts_ms)}</span>
+                      <span className="ml-2 font-mono">{a.agent ?? "?"}</span>
+                      <span className="ml-2">{a.event ?? "update"}</span>
+
+                      {a.agent === "validator" && a.event === "repair_planned" && (
+                        <span className="ml-2 text-amber-700">
+                          (regenerating: {(a.data?.beats_to_regen ?? []).join(", ")})
+                        </span>
+                      )}
+                    </div>
 
                     {a.agent === "validator" && a.event === "repair_planned" && (
-                        <span className="ml-2 text-amber-700">
-                        (regenerating: {(a.data?.beats_to_regen ?? []).join(", ")})
-                        </span>
-                    )}
-                    </div>
-
-                  {a.agent === "validator" && a.event === "repair_planned" && (
-                    <div className="mt-1 ml-4 text-gray-600">
-                      {/* Show compact reasons */}
-                      {a.data?.failed_reasons && (
-                        <div className="space-y-1">
-                          {Object.entries(a.data.failed_reasons).map(([beat, reasons]: any) => (
-                            <div key={beat}>
-                              <span className="font-mono">{beat}</span>:{" "}
-                              {Array.isArray(reasons) ? reasons.join(" • ") : String(reasons)}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Or show the exact format_response-style errors list */}
-                      {Array.isArray(a.data?.errors) && a.data.errors.length > 0 && (
-                        <div className="mt-2">
-                          <div className="text-xs font-medium">Validator errors</div>
-                          <ul className="list-disc ml-5">
-                            {a.data.errors.map((e: string, idx: number) => (
-                              <li key={idx}>{e}</li>
+                      <div className="mt-1 ml-4 text-gray-600">
+                        {a.data?.failed_reasons && (
+                          <div className="space-y-1">
+                            {Object.entries(a.data.failed_reasons).map(([beat, reasons]: any) => (
+                              <div key={beat}>
+                                <span className="font-mono">{beat}</span>:{" "}
+                                {Array.isArray(reasons) ? reasons.join(" • ") : String(reasons)}
+                              </div>
                             ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </li>
-              ))}
+                          </div>
+                        )}
+
+                        {Array.isArray(a.data?.errors) && a.data.errors.length > 0 && (
+                          <div className="mt-2">
+                            <div className="text-xs font-medium">Validator errors</div>
+                            <ul className="list-disc ml-5">
+                              {a.data.errors.map((e: string, idx: number) => (
+                                <li key={idx}>{e}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </div>
+
 
           <div className="mt-4 flex gap-3">
             <button
