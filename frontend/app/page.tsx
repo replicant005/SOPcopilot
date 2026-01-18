@@ -109,7 +109,7 @@ export default function Homepage() {
             <div
               className="absolute left-70 top-270 max-w-md z-20"
             >
-              <p className="text-base md:text-lg leading-relaxed text-[#3071D2]">
+              <p className="text-base md:text-lg leading-relaxed text">
               Squill is a guided writing tool designed to help users develop authentic, 
               compelling Statements of Purpose. It collects a small amount of input, such 
               as scholarship or application details and a few key resume points, and uses 
