@@ -164,12 +164,17 @@ export default function RunPage() {
     <div className="min-h-screen pt-[120px] px-6 flex justify-center">
       <div className="w-full max-w-3xl space-y-4">
         <div className="rounded-2xl bg-white/70 p-6">
-          <div className="flex items-center justify-between">
-            <div className="font-medium">Streaming pipeline</div>
-            <div className="text-sm text-gray-600">
-              {isLoading ? "Running…" : done ? "Complete" : "In Progress..."}
-            </div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 font-medium">
+            Question Generating Process
+            {isLoading && (
+              <div className="w-4 h-4 border-2 border-t-[#0956A9] border-gray-200 rounded-full animate-spin"></div>
+            )}
           </div>
+          <div className="text-sm text-gray-600">
+            {isLoading ? "Running…" : done ? "Complete" : "In Progress..."}
+          </div>
+        </div>
 
           {currentStage && (
             <div className="mt-2 text-xs text-gray-600">
@@ -182,7 +187,7 @@ export default function RunPage() {
           {/* PII panel */}
           {piiSpans.length > 0 && (
             <div className="mt-4 rounded-xl border border-gray-200 bg-white p-3">
-              <div className="text-xs font-medium mb-2">PII detected (redacted)</div>
+              <div className="text-xs font-medium mb-2">PII detected (redacting personal information)</div>
               <ul className="text-xs text-gray-700 space-y-1">
                 {piiSpans.map((s, i) => (
                   <li key={i}>
@@ -199,7 +204,7 @@ export default function RunPage() {
 
           {/* Audit panel */}
           <div className="mt-4 rounded-xl border border-gray-200 bg-white p-3 max-h-80 overflow-auto">
-            <div className="text-xs font-medium mb-2">Audit log (live)</div>
+            <div className="text-xs font-medium mb-2">Live updates</div>
             <ul className="space-y-1 text-xs text-gray-700">
               {audit.slice(-80).map((a, i) => (
                 <li key={i} className="py-1">
@@ -249,14 +254,17 @@ export default function RunPage() {
 
           <div className="mt-4 flex gap-3">
             <button
-              className="px-5 py-2 rounded-full bg-black text-white text-sm disabled:opacity-50"
+              className="px-5 py-2 rounded-full bg-[#0956A9] text-white text-sm disabled:opacity-50 hover:bg-[#63A0E8] transition-colors"
               disabled={!done}
               onClick={() => router.push("/notepad/results")}
             >
               View questions →
             </button>
 
-            <button className="px-5 py-2 rounded-full border text-sm" onClick={() => router.push("/notepad")}>
+            <button
+              className="px-5 py-2 rounded-full border border-[#0956A9] text-[#0956A9] text-sm hover:border-[#63A0E8] hover:text-[#63A0E8] transition-colors"
+              onClick={() => router.push("/notepad")}
+            >
               Start over
             </button>
           </div>
