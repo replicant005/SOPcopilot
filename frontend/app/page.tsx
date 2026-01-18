@@ -108,9 +108,7 @@ export default function Homepage() {
 
             {/* ABOUT BODY TEXT */}
             <div
-              // ref={aboutPara}
               className="absolute left-70 top-270 max-w-md z-20"
-              // style={{ transform: `translateY(${scrollY * 0.18}px)` }}
             >
               <p className="text-base md:text-lg leading-relaxed text-[#3071D2]">
               Lorem Ipsum is simply dummy text of the printing and typesetting industry.
@@ -135,23 +133,14 @@ export default function Homepage() {
             />
 
 
-            {/* <div className="text-left absolute left-65 top-255 max-w-5xl">
-                <p className="text-sm " style={{color: "#3071D2"}}>
-
-                    hello test
-                </p>
-
-            </div> */}
-
-
             {/* LOWER IMAGE (medium speed) */}
             <Image
               ref={lowerRef}
-              src="/lower.svg"
-              alt="lower"
+              src="/blue_s.png"
+              alt="blue squiggle banner"
               width={1300}
               height={1000}
-              className="absolute left-50 top-340 z-10 will-change-transform"
+              className="absolute left-50 top-320 z-10 will-change-transform"
             />
 
         </div>
