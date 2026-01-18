@@ -108,10 +108,10 @@ export default function RunPage() {
             }
           }
         }
+        setIsLoading(false);
+        
       } catch (e: any) {
         setError(e?.message ?? "Unknown error");
-      } finally {
-        setIsLoading(false);
       }
     }
 
@@ -204,7 +204,7 @@ export default function RunPage() {
 
           {/* Audit panel */}
           <div className="mt-4 rounded-xl border border-gray-200 bg-white p-3 max-h-80 overflow-auto">
-            <div className="text-xs font-medium mb-2">Live updates</div>
+            <div className="text-xs font-medium mb-2">Live Updates</div>
             <ul className="space-y-1 text-xs text-gray-700">
               {audit.slice(-80).map((a, i) => (
                 <li key={i} className="py-1">
