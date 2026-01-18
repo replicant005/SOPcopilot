@@ -31,7 +31,7 @@ export default function InputPage() {
           onChange={(e) => setScholarship(e.target.value)} placeholder="Scholarship name" />
 
         <select className="w-full p-3 text-sm rounded-lg border bg-white"
-          value={program} onChange={(e) => setProgram(e.target.value as any)}>
+          value={program} onChange={(e) => setProgram(e.target.value as "Undergrad" | "Graduate" | "Community Grant")}>
           <option value="Undergrad">Undergrad</option>
           <option value="Graduate">Graduate</option>
           <option value="Community Grant">Community Grant</option>
