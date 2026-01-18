@@ -10,20 +10,11 @@ Video Demo: ...
 
 ---
 
-# Squill Frontend
-
-This directory contains the frontend for **Squill**, a web application designed to guide students through writing Statements of Purpose using thoughtful, AI-generated questions.
-
-The frontend is built with **Next.js** and **TypeScript**, along with standard web technologies such as HTML and CSS.
-
----
-
-## Prerequisites
-
-You'll need Node.js, npm, Python 3.11, and pip. If something fails, upgrade these.
-
-## Getting Started
+# Quick Start
 You will need to run both a frontend and backend server. Start with the backend.
+
+0. ### Download the Directory
+Then start a terminal at the directory you just downloaded, ``SOPcopilot``.
 
 1. ### Initialize a virtual environment and install dependencies
 Ensure your new terminal is in the root directory, ``SOPcopilot``. Then, run:
