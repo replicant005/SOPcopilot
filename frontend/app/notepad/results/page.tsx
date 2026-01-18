@@ -38,6 +38,15 @@ export default function ResultsPage() {
     []
   );
 
+  const beatColors: Record<BeatKey, string> = {
+    A: "#F24F39",
+    B: "#F3792D",
+    C: "#F0A718",
+    D: "#267239",
+    E: "#0B56A8",
+  };
+  
+
   const finalByBeat = result?.final_questions_by_beat;
 
   function setAnswer(key: string, v: string) {
@@ -82,33 +91,62 @@ export default function ResultsPage() {
           )}
         </div>
 
-        {beatsMeta.map((beat) => {
+        {beatsMeta.map((beat, idx) => {
           const qs = finalByBeat?.[beat.key] ?? [];
           return (
-            <div key={beat.key} className="space-y-2">
+            <div key={beat.key}>
+              <div className="space-y-2">
+              <div className="space-y-1">
               <h3 className="text-sm font-medium">
                 {beat.title}
-                <span className="text-gray-400 font-normal ml-2">{beat.description}</span>
+                <span className="text-gray-400 font-normal ml-2">
+                  {beat.description}
+                </span>
               </h3>
 
-              <div className="space-y-4">
-                {qs.map((qo, i) => {
-                  const k = `${beat.key}-${i}`;
-                  return (
-                    <div key={k} className="bg-white rounded-xl border border-gray-200 p-4 space-y-2">
-                      <div className="text-sm text-gray-900">{qo.question}</div>
-                      <div className="text-xs text-gray-500">Intent: {qo.intent}</div>
+              {/* Colored underline */}
+              <div
+                className="h-[2px] w-25 rounded-full"
+                style={{ backgroundColor: beatColors[beat.key] }}
+              />
+            </div>
 
-                      <textarea
-                        className="w-full min-h-[96px] p-3 text-sm rounded-lg border border-gray-200"
-                        placeholder="Write your answer here…"
-                        value={answers[k] ?? ""}
-                        onChange={(e) => setAnswer(k, e.target.value)}
-                      />
-                    </div>
-                  );
-                })}
+                <div className="space-y-4">
+                  {qs.map((qo, i) => {
+                    const k = `${beat.key}-${i}`;
+                    return (
+                      <div key={k} className="relative">
+                        {/* Sticky tab */}
+                        <div
+                          className="absolute -left-8 top-4 w-10 h-12 rounded-l-lg"
+                          style={{ backgroundColor: beatColors[beat.key] }}
+                        />
+
+                        <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-2 relative z-10">
+                          <div className="text-sm text-gray-900">
+                            {qo.question}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            Intent: {qo.intent}
+                          </div>
+
+                          <textarea
+                            className="w-full min-h-[96px] p-3 text-sm rounded-lg border border-gray-200"
+                            placeholder="Write your answer here…"
+                            value={answers[k] ?? ""}
+                            onChange={(e) => setAnswer(k, e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
+
+              {/* Divider between categories */}
+              {idx < beatsMeta.length - 1 && (
+                <div className="my-10 h-px bg-gray-200/70" />
+              )}
             </div>
           );
         })}
