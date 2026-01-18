@@ -56,15 +56,14 @@ export default function Homepage() {
               className="absolute left-0 top-7 z-10 will-change-transform"
             />
 
-
+            <div ref={pacmanRef} className="absolute left-35 top-35 z-20 will-change-transform">
             <Image
-              ref={pacmanRef}
               src="/pencil1.png"
               alt="pencil icon"
               width={90}
               height={100}
-              className="absolute left-35 top-35 z-20 will-change-transform"
             />
+            </div>
 
 
             {/* HERO TEXT that doesnt move */}
