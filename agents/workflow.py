@@ -8,7 +8,12 @@ from agents.validation_utils import (
     _ungrounded_numbers,
 )
 # from agents.prompts import beat_planner_messages, question_generator_messages
-from agents.prompts import beat_planner_messages, question_generator_messages
+from agents.prompts import (
+    beat_planner_messages, 
+    question_generator_messages,
+    _program_slots,
+    _build_canonical_input
+    )
 from agents.logger_utils import log_event, log_event_patch
 from econf.env import _set_env
 
@@ -28,16 +33,16 @@ _set_env("COHERE_API_KEY")
 llm = ChatCohere(model="command-a-03-2025")
  
 
-def _build_canonical_input(user_input: UserInput) -> str:
-    """
-    A helper to combine all the inputs together."""
-    bullets = "\n".join(f"- {b}" for b in user_input.resume_points)
-    return (
-        f"Scholarship: {user_input.scholarship_name}\n"
-        f"Scholarship type: {user_input.program_type}\n"
-        f"Goal: {user_input.goal_one_liner}\n"
-        f"Resume points:\n{bullets}\n"
-    )
+# def _build_canonical_input(user_input: UserInput) -> str:
+#     """
+#     A helper to combine all the inputs together."""
+#     bullets = "\n".join(f"- {b}" for b in user_input.resume_points)
+#     return (
+#         f"Scholarship: {user_input.scholarship_name}\n"
+#         f"Scholarship type: {user_input.program_type}\n"
+#         f"Goal: {user_input.goal_one_liner}\n"
+#         f"Resume points:\n{bullets}\n"
+#     )
 
 
 def make_redactor_node(

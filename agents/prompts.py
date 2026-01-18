@@ -1,8 +1,47 @@
 from textwrap import dedent
-from agents.models import BeatPlanItem
+from agents.models import BeatPlanItem, UserInput
 
 from textwrap import dedent
 
+def _program_slots(program_type: str) -> str:
+    if program_type == "Graduate":
+        return (
+            "=== Program-Specific Context (Graduate) ===\n"
+            "[Research Direction] \n"
+            "[Target Lab/Faculty Fit] \n"
+            "[Methods/Skills Readiness] \n"
+        )
+    if program_type == "Undergrad":
+        return (
+            "=== Program-Specific Context (Undergraduate) ===\n"
+            "[Exploration Path] \n"
+            "[Learning Plan] \n"
+            "[Mentorship Style] \n"
+        )
+    if program_type == "Community Grant":
+        return (
+            "=== Program-Specific Context (Community Grant) ===\n"
+            "[Community Need] \n"
+            "[Stakeholders/Partners] \n"
+            "[Success Metrics] \n"
+            "[Sustainability Plan] \n"
+        )
+    return ""
+
+def _build_canonical_input(user_input: UserInput) -> str:
+    bullets = user_input.resume_points or []
+    resume_block = "\n".join(f"[Resume Point #{i+1}] {b}" for i, b in enumerate(bullets)) or "[Resume Point #1] (none provided)"
+
+    return (
+        "=== Opportunity ===\n"
+        f"[Scholarship Name] {user_input.scholarship_name}\n"
+        f"[Program Type] {user_input.program_type}\n\n"
+        "=== Applicant Goal ===\n"
+        f"[Goal One-liner] {user_input.goal_one_liner}\n\n"
+        f"{_program_slots(user_input.program_type)}\n"
+        "=== Experience Inventory ===\n"
+        f"{resume_block}\n"
+    )
 
 def _beat_defs(program_type: str) -> str:
 

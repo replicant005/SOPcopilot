@@ -4,34 +4,31 @@ from time import perf_counter
 
 from pprint import pprint
 
-exp1 = {
-    "scholarship_name": "Vector scholarships",
-    
-    # Remember, it needs to be either one of ["Graduate", "Undergraduate", "Community Grant"]
-    "program_type": "Graduate",
-    "goal_one_liner": "Machine Learning Workshop hosts for academic engagement.",
-    "resume_points": [
-        "Led a team of 5 in developing a 3D CNN to decode emotional state from 7tfMRI brain images, improved the test accuracy to 80%."
-        "Organized and hosted weekly study paper reading groups for over 15 students in transformers.",
-        "Conducted research under Prof Geoffery Hinton, resulting in a published paper in a Neurlps 2025 conference.",
-    ],
-}
-
-
-exp2 = {
-    "scholarship_name": "Foresters Financial community grant",
-    "program_type": "Community Grant",
-    "goal_one_liner": "Machine Learning Workshop hosts for academic engagement.",
-    "resume_points": [
-        "Led a team of 5 in developing a 3D CNN to decode emotional state from 7tfMRI brain images, improved the test accuracy to 80%."
-        "Organized and hosted weekly study paper reading groups for over 15 students in transformers.",
-        "Conducted research under Prof Geoffery Hinton, resulting in a published paper in a Neurlps 2025 conference.",
-    ],
-}
-
 start = perf_counter()
-user_input = UserInput.model_validate(exp2)
-out = run_pipeline(user_input)
+
+exp1 = UserInput(
+  scholarship_name="UofT Summer Research Experience Award",
+  program_type="Undergrad",
+  goal_one_liner="I want to explore computer vision for medical imaging and learn how to do research with a lab team.",
+  resume_points=[
+    "Built a PyTorch object detector and evaluated mAP on a custom dataset",
+    "Led a 4-person hackathon team; shipped a full-stack web app in 36 hours",
+    "Tutored calculus and linear algebra; created weekly practice sets for 30+ students",
+  ]
+)
+
+exp2 = UserInput(
+  scholarship_name="NSERC CGS-M",
+  program_type="Graduate",
+  goal_one_liner="I want to research robust representation learning for scientific imaging, bridging physics intuition and deep learning.",
+  resume_points=[
+    "Trained contrastive models to learn embeddings from high-dimensional click probability data",
+    "Implemented Faster R-CNN and YOLO pipelines; compared metrics and inference speed",
+    "Wrote reproducible ML training scripts with deterministic seeds and artifact versioning",
+  ]
+)
+
+out = run_pipeline(exp1)
 end = perf_counter()
 print("Exec time: ", end - start)
 
