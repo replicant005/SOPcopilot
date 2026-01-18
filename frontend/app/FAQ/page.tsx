@@ -1,8 +1,30 @@
 "use client";
 import Image from "next/image";
-import Link from "next/link";
+import { useEffect, useRef } from "react";
 
 export default function FAQ() {
+    const pacmanRef = useRef<HTMLImageElement>(null);
+
+
+    useEffect(() => {
+        let ticking = false;
+      
+        const onScroll = () => {
+          if (!ticking) {
+            window.requestAnimationFrame(() => {
+              const y = window.scrollY;
+              pacmanRef.current!.style.transform = `translateY(${y * 0.25}px)`;
+              ticking = false;
+            });
+            ticking = true;
+          }
+        };
+
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => window.removeEventListener("scroll", onScroll);
+      }, []);
+
+
     return (
         <div
             className="relative flex items-center justify-center min-h-screen bg-no-repeat bg-cover px-6
@@ -13,18 +35,17 @@ export default function FAQ() {
                 backgroundPosition: "center ",
             }}
         >
-                <Image
-                    src="/green.svg"
-                    alt="Green line decor"
-                    width={1300}
-                    height={1100}
-                    className="absolute left-10 top-20 z-1"
-                />
-            
-            
-
+            <div ref={pacmanRef} className="absolute left-10 top-20">
+            <Image
+                src="/green.svg"
+                alt="Green line decor"
+                width={1300}
+                height={1100}
+            />
+            </div>
+        
             {/* Content Box */}
-            <div className="mt-15 ml-40 flex items-start gap-20 max-w-[1000px]">
+            <div className="mt-10 ml-40 flex items-start gap-20 max-w-[1000px]">
 
             {/* Text Content */}
             <div className="max-w-[800px]">
@@ -57,7 +78,6 @@ export default function FAQ() {
             </Link> */}
 
             </div>
-
             </div>
     );
 }
