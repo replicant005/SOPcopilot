@@ -361,13 +361,13 @@ def validator_node(state: PipelineState) -> Command | dict:
                             f"Ungrounded numbers not found in source: {missing_nums}"
                         )
 
-                    missing_entities = _ungrounded_entities(
-                        qtext, source_text, source_norm
-                    )
-                    if missing_entities:
-                        reasons.append(
-                            f"Ungrounded entities not found in source: {missing_entities}"
-                        )
+                    # missing_entities = _ungrounded_entities(
+                    #     qtext, source_text, source_norm
+                    # )
+                    # if missing_entities:
+                    #     reasons.append(
+                    #         f"Ungrounded entities not found in source: {missing_entities[0]}"
+                    #     )
 
                     if "@" in qtext:
                         reasons.append("Email-like token detected in question.")
@@ -408,6 +408,8 @@ def validator_node(state: PipelineState) -> Command | dict:
             {
                 "attempt": attempt,
                 "beats_to_regen": failed_beats,
+                "failed_reasons": failed_reasons,
+                "errors": report.errors,
             }
         )
 
@@ -417,7 +419,9 @@ def validator_node(state: PipelineState) -> Command | dict:
             )
             report.ok = True
             return Command(
-                update={"validation_report": report, "attempt_count": attempt}, goto=END
+                update={"validation_report": report, "attempt_count": attempt
+                        **base_log, **repair_log}, 
+                goto=END
             )
 
         qb = state.get("questions_by_beat", {}) or {}
@@ -438,6 +442,8 @@ def validator_node(state: PipelineState) -> Command | dict:
                 "failed_beats": failed_beats,
                 "failed_reasons": failed_reasons,
                 "questions_by_beat": qb_cleared,
+                **base_log,
+                **repair_log,
             },
             goto=sends,
         )

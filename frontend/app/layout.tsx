@@ -3,8 +3,8 @@ import "./globals.css";
 import Navbar from "./components/navbar/Navbar";
 
 export const metadata: Metadata = {
-  title: "XXX — Landing",
-  description: "Welcome to XXX",
+  title: "Squill | Write Freely",
+  description: "AI-powered writing assistant that self-tailors a question-answer writing experience just for you.",
 };
 
 export default function RootLayout({
