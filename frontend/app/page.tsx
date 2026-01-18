@@ -100,7 +100,7 @@ export default function Homepage() {
               style={{ transform: `translateY(${scrollY * 0.18}px)` }}
             >
               <h2 className="text-3xl md:text-4xl font-semibold">
-                About Squill:
+                About Squill
               </h2>
             </div>
 
@@ -123,12 +123,21 @@ export default function Homepage() {
 
 
             <Image
-              src="/example.png"
+              src="/example1.png"
               alt="banner"
-              width={600}
+              width={410}
               height={600}
               priority
-              className="absolute left-190 top-290 z-10 will-change-transform"
+              className="absolute left-200 top-290 z-11 will-change-transform"
+            />
+
+            <Image
+              src="/example2.png"
+              alt="banner"
+              width={410}
+              height={600}
+              priority
+              className="absolute left-225 top-260 z-10 will-change-transform"
             />
 
 
@@ -139,7 +148,7 @@ export default function Homepage() {
               alt="blue squiggle banner"
               width={1300}
               height={1000}
-              className="absolute left-50 top-320 z-10 will-change-transform"
+              className="absolute left-50 top-290 z-10 will-change-transform"
             />
 
         </div>
