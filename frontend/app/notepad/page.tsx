@@ -65,7 +65,7 @@ export default function InputPage() {
             return;
           }
         } catch {}
-        setBannerError("Something looks off with the input. Please review and try again.");
+        setBannerError("Something looks off with the input. Please add more detail to your answers and try again.");
         return;
       }
 
