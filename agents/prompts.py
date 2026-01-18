@@ -37,8 +37,7 @@ def _beat_defs(program_type: str) -> str:
       fit between the two, or the motivation the user has to commit to a research program.
       """
         )
-        pass
-    elif program_type == "Undergraduate":
+    elif program_type == "Undergrad":
         return dedent(
             """
       Beats:
