@@ -193,7 +193,7 @@ export default function InputPage() {
   <button
     onClick={validateAndRun}
     className="px-5 py-2 rounded-full bg-[#0956A9] text-white text-sm disabled:opacity-50 hover:bg-[#63A0E8] transition-colors"
-    disabled={isChecking || !scholarship || !sentence || !resume1}
+    disabled={isChecking || !scholarship || !sentence || !resume1 || !resume2 || !resume3}
   >
     {isChecking ? "Checking…" : "Submit"}
   </button>

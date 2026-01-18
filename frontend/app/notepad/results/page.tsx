@@ -54,11 +54,47 @@ export default function ResultsPage() {
   }
 
   function exportAnswers() {
-    const blob = new Blob([JSON.stringify({ answers }, null, 2)], { type: "application/json" });
+    // Extract all answer values and join with two newlines
+    const answerValues = Object.entries(answers)
+      .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
+      .map(([_, value]) => value)
+      .filter(value => value.trim().length > 0);
+    
+    const textContent = answerValues.join("\n\n");
+    
+    const blob = new Blob([textContent], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "sop_answers.json";
+    a.download = "sop_answers.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function exportAll() {
+    const parts: string[] = [];
+    
+    // Iterate through beats in order
+    beatsMeta.forEach(beat => {
+      const qs = finalByBeat?.[beat.key] ?? [];
+      qs.forEach((qo, i) => {
+        const k = `${beat.key}-${i}`;
+        const answer = answers[k];
+        // Only add question and answer if answer exists
+        if (answer && answer.trim().length > 0) {
+          parts.push(qo.question);
+          parts.push(answer);
+        }
+      });
+    });
+    
+    const textContent = parts.join("\n\n");
+    
+    const blob = new Blob([textContent], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "sop_questions_and_answers.txt";
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -81,6 +117,12 @@ export default function ResultsPage() {
                 onClick={exportAnswers}
               >
                 Export answers
+              </button>
+              <button
+                className="px-4 py-2 rounded-full bg-[#0956A9] text-white text-sm hover:bg-[#63A0E8] transition-colors"
+                onClick={exportAll}
+              >
+                Export all
               </button>
             </div>
           </div>

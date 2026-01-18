@@ -1,15 +1,18 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 
 
 
 export default function Homepage() {
+    const router = useRouter();
 
     const bannerRef = useRef<HTMLImageElement>(null);
     const pacmanRef = useRef<HTMLImageElement>(null);
     const heroRef = useRef<HTMLDivElement>(null);
     const subtitleRef = useRef<HTMLDivElement>(null);
+    const buttonRef = useRef<HTMLDivElement>(null);
     const aboutRef = useRef<HTMLDivElement>(null);
     // const aboutPara = useRef<HTMLImageElement>(null);
     const lowerRef = useRef<HTMLImageElement>(null);
@@ -27,6 +30,7 @@ export default function Homepage() {
             pacmanRef.current!.style.transform = `translateY(${y * 0.45}px)`;
             heroRef.current!.style.transform = `translateY(${y * 0.10}px)`;
             subtitleRef.current!.style.transform = `translateY(${y * 0.2}px)`;
+            buttonRef.current!.style.transform = `translateY(${y * 0.2}px)`;
             aboutRef.current!.style.transform = `translateY(${y * 0.18}px)`;
             // aboutPara.current!.style.transform = `translateY(${y * 0.18}px)`;
             lowerRef.current!.style.transform = `translateY(${y * 0.3}px)`;
@@ -90,6 +94,19 @@ export default function Homepage() {
               <h2 className="text-2xl md:text-3xl font-medium tracking-wide">
                 write. create. explore.
               </h2>
+            </div>
+
+            {/* GET STARTED BUTTON */}
+            <div
+              ref={buttonRef}
+              className="absolute left-60 top-90 z-20 will-change-transform"
+            >
+              <button
+                onClick={() => router.push("/notepad")}
+                className="px-6 py-3 rounded-full bg-[#0956A9] text-white text-base font-medium hover:bg-[#63A0E8] transition-colors shadow-lg"
+              >
+                Get Started
+              </button>
             </div>
 
 

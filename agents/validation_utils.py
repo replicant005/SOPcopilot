@@ -11,22 +11,28 @@ e.g. Institution name, research subdomains, research roles...
 """
 
 import re
+
 try:
     from spacy import load
+
     NER_MODEL = load("en_core_web_sm", disable=["parser", "lemmatizer"])
 except Exception:
     NER_MODEL = None
 
 from typing import Union, Any
 from pydantic import BaseModel, ValidationError
-    
+
 _num_re = re.compile(r"\b\d+(\.\d+)?%?\b")
-_placeholder_re = re.compile(r"<(NAME|EMAIL|PHONE|LOCATION|URL|REDACTED)>", re.IGNORECASE)
+_placeholder_re = re.compile(
+    r"<(NAME|EMAIL|PHONE|LOCATION|URL|REDACTED)>", re.IGNORECASE
+)
+
 
 def _norm(s: str) -> str:
     s = s.lower()
     s = re.sub(r"\s+", " ", s).strip()
     return s
+
 
 def _norm_q(s: str) -> str:
     # Normalize for dedupe: lowercase, collapse whitespace, strip punctuation-ish
@@ -35,6 +41,7 @@ def _norm_q(s: str) -> str:
     s = re.sub(r"[“”\"'`]", "", s)
     s = re.sub(r"\s*\?\s*$", "?", s)  # unify question mark ending
     return s
+
 
 def _ungrounded_numbers(question: str, source_norm: str) -> list[str]:
     nums = {m.group(0) for m in _num_re.finditer(question)}
@@ -45,12 +52,26 @@ def _ungrounded_numbers(question: str, source_norm: str) -> list[str]:
             missing.append(n)
     return sorted(set(missing))
 
-def _ungrounded_entities(question: str, source_text: str, source_norm: str) -> list[str]:
+
+def _ungrounded_entities(
+    question: str, source_text: str, source_norm: str
+) -> list[str]:
     if NER_MODEL is not None:
         doc = NER_MODEL(question)
         suspects = []
         for ent in doc.ents:
-            if ent.label_ in {"PERSON", "ORG", "GPE", "LOC", "DATE", "TIME", "MONEY", "PERCENT", "EVENT", "PRODUCT"}:
+            if ent.label_ in {
+                "PERSON",
+                "ORG",
+                "GPE",
+                "LOC",
+                "DATE",
+                "TIME",
+                "MONEY",
+                "PERCENT",
+                "EVENT",
+                "PRODUCT",
+            }:
                 ent_text = ent.text.strip()
                 if len(ent_text) < 2:
                     continue
@@ -67,6 +88,7 @@ def _ungrounded_entities(question: str, source_text: str, source_norm: str) -> l
             suspects.append(p)
     return sorted(set(suspects))
 
+
 def _validate_question_text(q: str) -> list[str]:
     reasons = []
     if not q.strip():
@@ -82,23 +104,24 @@ def _validate_question_text(q: str) -> list[str]:
         reasons.append("Question references redaction placeholders (e.g., <NAME>).")
     return reasons
 
-#  function to format the response 
-# args being the pydantic model from the pipeline and the result will be a JSON 
-# union is basically specifying thta state cam either be a dict or a base model 
+
+#  function to format the response
+# args being the pydantic model from the pipeline and the result will be a JSON
+# union is basically specifying thta state cam either be a dict or a base model
 # so the function accepts -  a pydantic model or dict
 def format_response(state: Union[dict, BaseModel]) -> dict:
     # Convert Pydantic model state to dict if needed
 
-    if hasattr(state, 'model_dump'):
+    if hasattr(state, "model_dump"):
         # Pydantic model - convert to dict
         state_dict = state.model_dump()
     else:
         # Already a dict
         state_dict = state
-    
+
     # walks through any structure and cleans it (converst into dict)
     def to_dict(obj):
-        if hasattr(obj, 'model_dump'):
+        if hasattr(obj, "model_dump"):
             # Pydantic model - convert to dict
             return obj.model_dump()
         elif isinstance(obj, dict):
@@ -110,35 +133,29 @@ def format_response(state: Union[dict, BaseModel]) -> dict:
         else:
             # Primitive type - return as-is
             return obj
-    
+
     # Format response structure
     formatted = {
         # Final output (what frontend displays)
         "final_questions_by_beat": to_dict(
             state_dict.get("final_questions_by_beat", {})
         ),
-        
         # Redactor Agent output (for PII highlights panel)
         "pii_spans": to_dict(state_dict.get("pii_spans", [])),
         "redacted_input": state_dict.get("redacted_input", ""),
         "canonical_input": state_dict.get("canonical_input", ""),
-        
         # Beat Planner Agent output (for beat plan panel)
         "beat_plan": to_dict(state_dict.get("beat_plan", [])),
-        
         # Question Generator outputs (intermediate, before assembly)
         "questions_by_beat": to_dict(state_dict.get("questions_by_beat", {})),
-        
         # Validator Agent output (for validation panel)
         "validation_report": to_dict(state_dict.get("validation_report")),
-        
         # Audit timeline (for progress panel)
         "audit_timeline": state_dict.get("audit_timeline", []),
-        
         # Metadata
         "fallback_used": state_dict.get("fallback_used", False),
     }
-    
+
     return formatted
 
 
@@ -179,7 +196,7 @@ def create_custom_errors(e: ValidationError) -> dict[str, Any]:
 
         elif field == "resume_points":
             if typ in ("too_short", "list_too_short"):
-                friendly = "Please provide at least 2 resume bullet points."
+                friendly = "Please provide 3 resume bullet points."
             else:
                 friendly = "Resume bullet points look invalid."
 
@@ -197,5 +214,3 @@ def create_custom_errors(e: ValidationError) -> dict[str, Any]:
         "summary": summary,
         "field_errors": field_msgs,
     }
-
-
