@@ -39,7 +39,7 @@ export default function InputPage() {
 
         <textarea className="w-full p-3 text-sm rounded-lg border"
           value={sentence} onChange={(e) => setSentence(e.target.value)}
-          placeholder="One-sentence thesis (most important)" />
+          placeholder='One-sentence thesis (e.g. "My X makes me a compelling candidate for Y.")' />
 
         <input className="w-full p-3 text-sm rounded-lg border"
           value={resume1} onChange={(e) => setResume1(e.target.value)} placeholder="Resume point #1" />

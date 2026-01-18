@@ -325,7 +325,6 @@ def _beat_defs(program_type: str) -> str:
       """
         )
     elif program_type == "Graduate":
-        # TODO Create a prompt here.
         return dedent(
             """\
       Beats:
