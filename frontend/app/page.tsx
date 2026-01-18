@@ -110,14 +110,14 @@ export default function Homepage() {
               className="absolute left-70 top-270 max-w-md z-20"
             >
               <p className="text-base md:text-lg leading-relaxed text-[#3071D2]">
-               Lorem Ipsum is simply dummy text of the printing and typesetting industry.
-               Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, 
-               when an unknown printer took a galley of type and scrambled it to make a type 
-               specimen book. It has survived not only five centuries, but also the leap into 
-               electronic typesetting, remaining essentially unchanged. It was popularised in 
-               the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, 
-               and more recently with desktop publishing software like Aldus PageMaker including 
-               versions of Lorem Ipsum.
+              Squill is a guided writing tool designed to help users develop authentic, 
+              compelling Statements of Purpose. It collects a small amount of input, such 
+              as scholarship or application details and a few key resume points, and uses 
+              this information to generate thoughtful, personalized questions. Rather than 
+              rewriting a user’s work, Squill prompts reflection and incremental storytelling, 
+              helping users articulate their experiences, motivations, and growth step by step. 
+              Over time, this process results in a substantial body of text that genuinely 
+              reflects the user’s intellectual interests and personal identity.
               </p>
             </div>
 
