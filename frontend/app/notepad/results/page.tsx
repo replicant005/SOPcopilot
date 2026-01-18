@@ -61,10 +61,16 @@ export default function ResultsPage() {
           <div className="flex items-center justify-between">
             <div className="font-medium">Final questions + draft space</div>
             <div className="flex gap-2">
-              <button className="px-4 py-2 rounded-full border text-sm" onClick={() => router.push("/notepad/run")}>
-                Back to stream
+              <button
+                className="px-4 py-2 rounded-full border border-[#0956A9] text-[#0956A9] text-sm hover:border-[#63A0E8] hover:text-[#63A0E8] transition-colors"
+                onClick={() => router.push("/notepad/run")}
+              >
+                Regenerate
               </button>
-              <button className="px-4 py-2 rounded-full bg-black text-white text-sm" onClick={exportAnswers}>
+              <button
+                className="px-4 py-2 rounded-full bg-[#0956A9] text-white text-sm hover:bg-[#63A0E8] transition-colors"
+                onClick={exportAnswers}
+              >
                 Export answers
               </button>
             </div>
