@@ -1,7 +1,7 @@
 # Squill
 
 <p align="center">
-![Banner Image](banner.png)
+  <img src="banner.png" alt="Banner Image" />
 </p>
 
 Squill is an application that guides students through the Statement of Purpose writing process by generating thoughtful questions rather than writing the content for them. Squill will take some personal information such as application details and resume points and formulate a set of personalized and beneficial questions to inspire its users to write and be more clear about the identity they portray through their applications.
