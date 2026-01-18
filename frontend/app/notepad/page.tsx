@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 
 type Program = "Undergrad" | "Graduate" | "Community Grant";
 

@@ -164,12 +164,20 @@ export default function RunPage() {
     <div className="min-h-screen pt-[120px] px-6 flex justify-center">
       <div className="w-full max-w-3xl space-y-4">
         <div className="rounded-2xl bg-white/70 p-6">
+<<<<<<< HEAD
+          <div className="flex items-center justify-between">
+            <div className="font-medium">Streaming pipeline</div>
+            <div className="text-sm text-gray-600">
+              {isLoading ? "Running…" : done ? "Complete" : !(error === null) ? `Stopped: ${error}` : "In progress..."}
+            </div>
+=======
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 font-medium">
             Question Generating Process
             {isLoading && (
               <div className="w-4 h-4 border-2 border-t-[#0956A9] border-gray-200 rounded-full animate-spin"></div>
             )}
+>>>>>>> origin/main
           </div>
           <div className="text-sm text-gray-600">
             {isLoading ? "Running…" : done ? "Complete" : "In Progress..."}
