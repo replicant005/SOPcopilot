@@ -51,7 +51,7 @@
 #         C: Impact
 #         D: Leadership & Character
 #         E: Reflection & Growth
-  
+
 #         For example, the user may (a) be applying to a PhD (research) program and \
 #         (b) have research experience on their resume. Suppose you are working on beat A: Purpose & Fit. \
 #         In this case, you should output anchors to both the fact that the PhD is a research program and \
@@ -306,43 +306,83 @@
 #         {"role": "user", "content": profile.question_rules + "\n\n" + regen_rules + "\n" + user_ctx},
 #     ]
 
-from textwrap import dedent
 from agents.models import BeatPlanItem
 
+from textwrap import dedent
+
+
 def _beat_defs(program_type: str) -> str:
-  
- if program_type == "Community Grant":
-    return dedent("""\
-    Beats:
-    A: Purpose & Fit - Community need, grant alignment
-    B: Excellence / Proof - Concrete community projects, measurable outcomes
-    C: Impact - Community beneficiaries, sustainable change
-    D: Leadership & Character - Grassroots leadership, coalition building
-    E: Reflection & Growth - Community work lessons, future vision
-    """)
 
- elif program_type == "Graduate":
-    return dedent("""\
-    Beats:
-    A: Purpose & Fit - Research interests, specialization alignment
-    B: Excellence / Proof - Research experience, publications, academic rigor
-    C: Impact - Contribution to field, future research potential
-    D: Leadership & Character - Research collaboration, mentorship, integrity
-    E: Reflection & Growth - Research evolution, methodology growth
-    """)
+    if program_type == "Community Grant":
+        return dedent(
+            """\
+      Beats:
+      A: Purpose & Fit
+      B: Excellence / Proof
+      C: Impact
+      D: Leadership & Character
+      E: Reflection & Growth
+      """
+        )
+    elif program_type == "Graduate":
+        # TODO Create a prompt here.
+        return dedent(
+            """\
+      Beats:
+      A: Purpose & Fit
+      B: Excellence / Proof
+      C: Impact
+      D: Leadership & Character
+      E: Reflection & Growth
 
- elif program_type == "Undergrad":
-    return dedent("""\
+      The opportunity the user indicated is linked to a graduate (masters/PhD) program.
+
+
+      For example, the user may (a) be applying to a PhD (research) program and \
+      (b) have research experience on their resume. Suppose you are working on beat A: Purpose & Fit. \
+      In this case, you should output anchors to both the fact that the PhD is a research program and \
+      their past experience in research. You may say that missing information includes the research \
+      fit between the two, or the motivation the user has to commit to a research program.
+      """
+        )
+        pass
+    elif program_type == "Undergraduate":
+        return dedent(
+            """
+      Beats:
+      A: Purpose & Fit
+      B: Excellence / Proof
+      C: Impact
+      D: Leadership & Character
+      E: Reflection & Growth
+
+      The opportunity the user indicated is linked to an undergraduate (associate/bachelor) program.
+
+
+      For example, the user may (a) be applying to a Research Experience for Undergraduates (REU) (research) program and \
+      (b) have research experience on their resume. Suppose you are working on beat A: Purpose & Fit. \
+      In this case, you should output anchors to both the fact that the REU is a research program and \
+      their past experience in research. You may say that missing information includes the research \
+      fit between the two, or the motivation the user has to commit to a research program.
+        """
+        )
+
+    else:
+        return dedent(
+            f"""
     Beats:
-    A: Purpose & Fit - Early academic journey, scholarship alignment
-    B: Excellence / Proof - Academic achievements, early projects
-    C: Impact - Local community impact, future potential
-    D: Leadership & Character - Club leadership, peer collaboration
-    E: Reflection & Growth - Early learning experiences, growth trajectory
-    """)
- else :
-    pass
-    raise Exception("Unkown scholarship type is passed.")
+      A: Purpose & Fit
+      B: Excellence / Proof
+      C: Impact
+      D: Leadership & Character
+      E: Reflection & Growth
+
+      The opportunity the user indicated is linked to a program of type: {program_type}.
+
+      When outputing anchors, missing, and so on, keep in mind considerations unique to programs of type: {program_type}.
+    """
+        )
+
 
 def beat_planner_messages(program_type: str, redacted_input: str):
 
@@ -362,21 +402,23 @@ def beat_planner_messages(program_type: str, redacted_input: str):
 
     For each beat, output:
     - beat: one of A,B,C,D,E.
-    - missing: 2-4 short, specific missing details needed to write that beat,
+    - missing: 2-4 short, specific missing details needed to write that beat, \
       grounded in the redacted input (reference the section name when possible).
-    - guidance: one actionable hint (<= 20 words). Tailor this to 
-    - anchors: 2-4 exact phrases copied verbatim from the redacted input (each <= 6 words)
+    - guidance: one actionable hint (<= 20 words). Tailor this to the opportunity \
+        listed in the redacted input. For example, if it is a scholarship for community service, \
+        and asks for examples of community service\
+    - anchors: 2-4 exact phrases copied verbatim from the redacted input (each <= 6 words) \
       that are relevant to this beat, along with where they appear.
     
     For example, the user may (a) be applying to a PhD (research) program and \
       (b) have research experience on their resume. Suppose you are working on beat A: Purpose & Fit. \
-      In this case, you should output anchors to both the fact that the PhD is a research program and \
-      their past experience in research. You may say that missing information includes the research \
-      fit between the two, or the motivation the user has to commit to a research program.
-      
-    Constraints:
-    - Include A,B,C,D,E exactly once.
-    - If the input lacks anchors for a beat, set anchors=[] and put the needed specifics in missing.
+      In this case, for anchors, you should output anchors to the fact that the PhD is a research program and \
+      that they have past experience in research. \
+      For missing, You may include that missing information includes the research \
+      fit between the two, or the motivation the user has to commit to a research program, or a specific \
+      illustrative anecdote for a specific trait requested by admissions commit3tees, such as intelligence, \
+      persistence, and so on. \
+      For guidance, you may give a hint such as `
     """
     )
 
@@ -395,9 +437,10 @@ def beat_planner_messages(program_type: str, redacted_input: str):
         {"role": "user", "content": rules + "\n\n" + user_ctx},
     ]
 
-def question_generator_messages(task: BeatPlanItem, 
-                                program_type: str,
-                                redacted_input: str):
+
+def question_generator_messages(
+    task: BeatPlanItem, program_type: str, redacted_input: str
+):
     system = dedent(
         """\
     You generate tailored questions to help an applicant write their Statement of Purpose.
