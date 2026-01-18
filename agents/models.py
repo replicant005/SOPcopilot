@@ -28,10 +28,9 @@ class UserInput(BaseModel) :
     )
     resume_points : list[str] = Field(
         ...,
-        min_length=2,
-        description="list of resume bullet points"
+        min_length=3,
+        description="list of resume bullet points",
     )
-
 
 
 class PiiSpan(BaseModel):

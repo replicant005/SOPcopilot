@@ -17,8 +17,8 @@ try:
 except Exception:
     NER_MODEL = None
 
-from typing import Union
-from pydantic import BaseModel
+from typing import Union, Any
+from pydantic import BaseModel, ValidationError
     
 _num_re = re.compile(r"\b\d+(\.\d+)?%?\b")
 _placeholder_re = re.compile(r"<(NAME|EMAIL|PHONE|LOCATION|URL|REDACTED)>", re.IGNORECASE)
@@ -140,3 +140,62 @@ def format_response(state: Union[dict, BaseModel]) -> dict:
     }
     
     return formatted
+
+
+def create_custom_errors(e: ValidationError) -> dict[str, Any]:
+    """
+    Convert Pydantic ValidationError into user-friendly messages.
+    Returns a structure the frontend can render.
+    """
+    field_msgs: dict[str, list[str]] = {}
+
+    for err in e.errors():
+        loc = err.get("loc", ())
+        msg = err.get("msg", "Invalid input")
+        typ = err.get("type", "")
+
+        # loc looks like ('resume_points', 0) or ('goal_one_liner',)
+        field = str(loc[0]) if loc else "input"
+
+        # Custom mapping by field + error type
+        if field == "scholarship_name":
+            if typ == "string_too_short":
+                friendly = "Please enter the scholarship name."
+            elif typ == "string_too_long":
+                friendly = "Scholarship name is too long (max 200 characters)."
+            else:
+                friendly = "Scholarship name looks invalid."
+
+        elif field == "program_type":
+            friendly = "Please select a valid program type."
+
+        elif field == "goal_one_liner":
+            if typ == "string_too_short":
+                friendly = "Your one-sentence thesis is too short (min 10 characters)."
+            elif typ == "string_too_long":
+                friendly = "Your one-sentence thesis is too long (max 500 characters)."
+            else:
+                friendly = "Please provide a valid one-sentence thesis."
+
+        elif field == "resume_points":
+            if typ in ("too_short", "list_too_short"):
+                friendly = "Please provide at least 2 resume bullet points."
+            else:
+                friendly = "Resume bullet points look invalid."
+
+        else:
+            # Fallback: keep original msg but you can simplify here
+            friendly = msg
+
+        field_msgs.setdefault(field, []).append(friendly)
+
+    # Optional: a short summary string for banner UI
+    summary = "Please fix the highlighted fields and try again."
+
+    return {
+        "ok": False,
+        "summary": summary,
+        "field_errors": field_msgs,
+    }
+
+
