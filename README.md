@@ -3,6 +3,8 @@
 Video Demo (Click the banner below!):
 [![Squill Demo](public/banner.png)](https://www.youtube.com/watch?v=OgVhrRd_cm8)
 
+If you only want to interact with the first frontend pages, here is the deployed version: [https://sopcopilot.vercel.app/](https://squill-frontend-hygdkx9z9-toyakkis-projects.vercel.app)
+
 Squill is an application that guides students through the Statement of Purpose writing process by generating thoughtful questions rather than writing the content for them. Squill will take some personal information such as application details and resume points and formulate a set of personalized and beneficial questions to inspire its users to write and be more clear about the identity they portray through their applications.
 
 ---
