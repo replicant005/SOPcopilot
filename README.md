@@ -1,12 +1,9 @@
 # Squill
 
-<p align="center">
-<img src="https://github.com/replicant005/SOPcopilot/blob/main/banner.png?raw=true" width=100%>
-</p>
+Video Demo (Click the banner below!):
+[![Squill Demo](banner.png)](https://www.youtube.com/watch?v=OgVhrRd_cm8)
 
 Squill is an application that guides students through the Statement of Purpose writing process by generating thoughtful questions rather than writing the content for them. Squill will take some personal information such as application details and resume points and formulate a set of personalized and beneficial questions to inspire its users to write and be more clear about the identity they portray through their applications.
-
-Video Demo: ...
 
 ---
 
@@ -72,3 +69,10 @@ app/            # Next.js App Router pages
 components/     # Reusable UI components
 public/         # Static assets (images, SVGs, icons)
 ```
+
+# Next steps
+- Deploy frontend on vercel.
+- Protect main branch.
+- Clean up some garbage code.
+- Prompt injection guardrails.
+- Extend this to google doc extension.
