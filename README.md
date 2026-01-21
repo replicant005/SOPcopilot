@@ -55,14 +55,14 @@ User (UI)
 
 **LLM Provider**
 * Cohere (COHERE_API_KEY, see .env.example)
-* High-quality text generation with strong instruction-following.
-* And to support this great Canadian startup, eh. 
+  * High-quality text generation with strong instruction-following.
+  * And to support this great Canadian startup, eh. 
 
 **Orchestration**
 
 * LangGraph (agent workflows)
-* Provides explicit stateful graphs instead of brittle prompt chains.
-* And to win the Forresters Challenge: https://www.linkedin.com/feed/update/urn:li:activity:7419442041513963520/
+  * Provides explicit stateful graphs instead of brittle prompt chains.
+  * And to win the Forresters Challenge: https://www.linkedin.com/feed/update/urn:li:activity:7419442041513963520/
 
 # Quick Start
 You will need to run both a frontend and backend server. Start with the backend.
