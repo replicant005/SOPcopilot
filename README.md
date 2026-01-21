@@ -25,6 +25,45 @@ components/     # Reusable UI components
 public/         # Static assets (images, SVGs, icons)
 ```
 
+# Request Flow
+``` bash
+User (UI)
+   ↓
+Frontend (Next.js)
+   ↓
+Backend API (main.py)
+   ↓
+LangGraph Agent Pipeline
+   ↓
+Generated Questions
+   ↓
+Frontend 
+   ↓
+User (UI)
+```
+
+# Tech Stack Summary
+**Frontend**
+* Next.js (App Router), TypeScript
+    * Chosen for fast iteration, server components, and strong typing.
+    * And it is easy to vibe code.
+
+**Backend**
+* Python (main.py)
+  * Simple, explicit orchestration layer that integrates cleanly with LangGraph.
+  * And it is easy to vibe code.
+
+**LLM Provider**
+* Cohere (COHERE_API_KEY, see .env.example)
+* High-quality text generation with strong instruction-following.
+* And to support this great Canadian startup, eh. 
+
+**Orchestration**
+
+* LangGraph (agent workflows)
+* Provides explicit stateful graphs instead of brittle prompt chains.
+* And to win the Forresters Challenge: https://www.linkedin.com/feed/update/urn:li:activity:7419442041513963520/
+
 # Quick Start
 You will need to run both a frontend and backend server. Start with the backend.
 ### Download the Directory and Start a Terminal
