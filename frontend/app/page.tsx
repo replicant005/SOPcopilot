@@ -73,8 +73,7 @@ export default function Homepage() {
             {/* HERO TEXT that doesnt move */}
             <div
               ref={heroRef}
-              className="absolute left-60 top-34 z-20 max-w-xl"
-              style={{ transform: `translateY(${scrollY * 0.1}px)` }}
+              className="absolute left-60 top-34 z-20 max-w-xl will-change-transform"
             >
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight">
                 welcome to <span className="font-semibold text-black"></span>
@@ -88,8 +87,7 @@ export default function Homepage() {
             {/* SUBTITLE */}
             <div
               ref={subtitleRef}
-              className="absolute left-60 top-75 z-20"
-              style={{ transform: `translateY(${scrollY * 0.1}px)` }}
+              className="absolute left-60 top-75 z-20 will-change-transform"
             >
               <h2 className="text-2xl md:text-3xl font-medium tracking-wide">
                 write. create. explore.
@@ -113,8 +111,7 @@ export default function Homepage() {
             {/* ABOUT HEADER */}
             <div
               ref={aboutRef}
-              className="absolute left-65 top-210 z-20"
-              style={{ transform: `translateY(${scrollY * 0.18}px)` }}
+              className="absolute left-65 top-210 z-20 will-change-transform"
             >
               <h2 className="text-3xl md:text-4xl font-semibold">
                 About Squill
