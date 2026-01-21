@@ -69,10 +69,3 @@ app/            # Next.js App Router pages
 components/     # Reusable UI components
 public/         # Static assets (images, SVGs, icons)
 ```
-
-# Next steps
-- Deploy frontend on vercel.
-- Protect main branch.
-- Clean up some garbage code.
-- Prompt injection guardrails.
-- Extend this to google doc extension.
