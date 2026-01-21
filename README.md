@@ -6,6 +6,24 @@ Video Demo (Click the banner below!):
 Squill is an application that guides students through the Statement of Purpose writing process by generating thoughtful questions rather than writing the content for them. Squill will take some personal information such as application details and resume points and formulate a set of personalized and beneficial questions to inspire its users to write and be more clear about the identity they portray through their applications.
 
 ---
+# Project Structure (Root Level)
+```bash
+.
+main.py # Backend entrypoint (API + agent orchestration)
+agents/                # LangGraph-based question generation pipeline
+econf/                 # Environment configuration & runtime assets
+frontend/              # Next.js (App Router) frontend application
+public/                # Static assets
+.env.example           # Environment variable template
+README.md              # Project overview and architecture
+```
+
+# Frontend Project Structure
+```bash
+app/            # Next.js App Router pages
+components/     # Reusable UI components
+public/         # Static assets (images, SVGs, icons)
+```
 
 # Quick Start
 You will need to run both a frontend and backend server. Start with the backend.
@@ -61,11 +79,3 @@ Once the server is running, open your browser and navigate to:
 http://localhost:3000
 ```
 And begin using the application. We hope you enjoy!
-
-
-# Frontend Project Structure
-```bash
-app/            # Next.js App Router pages
-components/     # Reusable UI components
-public/         # Static assets (images, SVGs, icons)
-```
